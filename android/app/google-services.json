@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "240747995868",
+    "project_id": "smartgreen-3fc5f",
+    "storage_bucket": "smartgreen-3fc5f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:240747995868:android:5b2b2d5f71a7527d0eca19",
+        "android_client_info": {
+          "package_name": "com.smartgreen.smart_green_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "240747995868-jppjurg8bc3bu6f2ev4h26r3b8g81ja2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.smartgreen.smart_green_flutter",
+            "certificate_hash": "aa5d19e3c100a5e106c53bb2103dc38ecc2356d6"
+          }
+        },
+        {
+          "client_id": "240747995868-5447jnje6uj1an5v10ndo9k823hb024q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDG7KsRMsqQCuTg92Yimxsy670F2bnt9gk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "240747995868-5447jnje6uj1an5v10ndo9k823hb024q.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
