@@ -297,6 +297,18 @@ class DatabaseHelper {
     _notifyChange('greenhouses');
   }
 
+  Future<void> deleteGreenhouse(int greenhouseId) async {
+    final db = await database;
+    await db.delete('greenhouses', where: 'greenhouse_id = ?', whereArgs: [greenhouseId]);
+    // Also delete associated devices, rules, logs, etc if needed. Or keep it simple.
+    // Let's cascade delete related entities to avoid orphans
+    await db.delete('devices', where: 'greenhouse_id = ?', whereArgs: [greenhouseId]);
+    await db.delete('automation_rules', where: 'greenhouse_id = ?', whereArgs: [greenhouseId]);
+    await db.delete('sensor_logs', where: 'greenhouse_id = ?', whereArgs: [greenhouseId]);
+    await db.delete('activity_logs', where: 'greenhouse_id = ?', whereArgs: [greenhouseId]);
+    _notifyChange('greenhouses');
+  }
+
   // ========================
   // DEVICE METHODS
   // ========================

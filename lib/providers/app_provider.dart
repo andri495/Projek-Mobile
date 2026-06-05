@@ -243,6 +243,15 @@ class AppProvider extends ChangeNotifier {
     ));
   }
 
+  Future<void> updateGreenhouse(int greenhouseId, String namaLahanBaru) async {
+    if (namaLahanBaru.trim().isEmpty) return;
+    await _db.updateGreenhouse(greenhouseId, {'nama_lahan': namaLahanBaru});
+  }
+
+  Future<void> deleteGreenhouse(int greenhouseId) async {
+    await _db.deleteGreenhouse(greenhouseId);
+  }
+
   // ========================
   // User actions
   // ========================
