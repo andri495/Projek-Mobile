@@ -42,9 +42,28 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final activities = provider.activityLogs;
 
     if (activeGreenhouse == null) {
-      return const Scaffold(
-        backgroundColor: Colors.white,
-        body: Center(child: Text('Belum ada lahan', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700))),
+      return Scaffold(
+        backgroundColor: const Color(0xFFF6F8FB),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFECFDF5),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: const Icon(Icons.history_rounded, size: 48, color: Color(0xFF059669)),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Belum ada lahan',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
@@ -60,125 +79,209 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final displayActivities = filteredActivities.isEmpty ? activities : filteredActivities;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF6F8FB),
       body: Column(
         children: [
-          _AppHeader(),
+          // ── Header ──
+          const _ScreenHeader(
+            title: 'Riwayat Lahan',
+            subtitle: 'Pantau grafik sensor & log alat',
+            icon: Icons.auto_graph_rounded,
+          ),
+          
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Catatan & Laporan Lahan',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Color(0xFF1E293B), letterSpacing: -0.3),
-                  ),
-                  const SizedBox(height: 24),
-
                   // Filter buttons
-                  Row(
-                    children: _filters.map((f) {
-                      final isActive = _activeFilter == f;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: GestureDetector(
-                          onTap: () => setState(() => _activeFilter = f),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 150),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: isActive ? const Color(0xFF047857) : Colors.white,
-                              border: Border.all(color: isActive ? const Color(0xFF047857) : const Color(0xFFE2E8F0)),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              f,
-                              style: TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.w700,
-                                color: isActive ? Colors.white : const Color(0xFF475569),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: Row(
+                      children: _filters.map((f) {
+                        final isActive = _activeFilter == f;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 12),
+                          child: GestureDetector(
+                            onTap: () => setState(() => _activeFilter = f),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                              decoration: BoxDecoration(
+                                gradient: isActive
+                                    ? const LinearGradient(
+                                        colors: [Color(0xFF047857), Color(0xFF10B981)],
+                                      )
+                                    : null,
+                                color: isActive ? null : Colors.white,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: isActive ? Colors.transparent : const Color(0xFFE2E8F0),
+                                  width: 1.5,
+                                ),
+                                boxShadow: isActive
+                                    ? [
+                                        BoxShadow(
+                                          color: const Color(0xFF059669).withValues(alpha: 0.3),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ]
+                                    : [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(alpha: 0.02),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                              ),
+                              child: Text(
+                                f,
+                                style: TextStyle(
+                                  fontSize: 13, 
+                                  fontWeight: FontWeight.w700,
+                                  color: isActive ? Colors.white : const Color(0xFF64748B),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      );
-                    }).toList(),
+                        );
+                      }).toList(),
+                    ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   // Info label filter aktif
-                  Text(
-                    filteredLogs.isEmpty
-                        ? 'Tidak ada data untuk "$_activeFilter", menampilkan semua data'
-                        : 'Menampilkan ${filteredLogs.length} data sensor untuk "$_activeFilter"',
-                    style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8), fontStyle: FontStyle.italic),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Text(
+                      filteredLogs.isEmpty
+                          ? 'Masa ini kosong, menampilkan ringkasan data terakhir'
+                          : 'Terdapat ${filteredLogs.length} data terekam di masa ini',
+                      style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8), fontWeight: FontWeight.w500),
+                    ),
                   ),
                   const SizedBox(height: 24),
 
-                  // Chart header
+                  // Chart Card
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Grafik 24 Jam Terakhir',
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Color(0xFF1E293B)),
+                            ),
+                            Row(
+                              children: [
+                                _LegendDot(color: Color(0xFFF59E0B), label: 'Suhu'),
+                                SizedBox(width: 12),
+                                _LegendDot(color: Color(0xFF0EA5E9), label: 'Lembap'),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 32),
+                        SizedBox(
+                          height: 200,
+                          child: chartData.isEmpty
+                              ? const Center(child: Text('Tidak ada data', style: TextStyle(color: Color(0xFF94A3B8))))
+                              : LineChart(
+                                  LineChartData(
+                                    gridData: FlGridData(
+                                      show: true,
+                                      drawVerticalLine: false,
+                                      horizontalInterval: 20,
+                                      getDrawingHorizontalLine: (value) => FlLine(
+                                        color: const Color(0xFFF1F5F9),
+                                        strokeWidth: 1,
+                                        dashArray: [5, 5],
+                                      ),
+                                    ),
+                                    borderData: FlBorderData(show: false),
+                                    titlesData: FlTitlesData(
+                                      leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                      rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                      topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                      bottomTitles: AxisTitles(
+                                        sideTitles: SideTitles(
+                                          showTitles: true,
+                                          getTitlesWidget: (val, _) {
+                                            final idx = val.toInt();
+                                            if (idx < 0 || idx >= chartData.length) return const SizedBox.shrink();
+                                            if (idx % 2 != 0) return const SizedBox.shrink();
+                                            return Padding(
+                                              padding: const EdgeInsets.only(top: 12),
+                                              child: Text(
+                                                chartData[idx].label,
+                                                style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8), fontWeight: FontWeight.w700),
+                                              ),
+                                            );
+                                          },
+                                          reservedSize: 32,
+                                        ),
+                                      ),
+                                    ),
+                                    minY: 0, maxY: 100,
+                                    lineBarsData: [
+                                      _buildLine(chartData.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.suhu)).toList(), const Color(0xFFF59E0B)),
+                                      _buildLine(chartData.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.lembab)).toList(), const Color(0xFF0EA5E9)),
+                                    ],
+                                  ),
+                                ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Activity log Title
                   const Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text('Grafik 24 Jam Terakhir',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1E293B))),
-                      Row(
-                        children: [
-                          _LegendDot(color: Color(0xFFFBBF24), label: 'Suhu\n(°C)'),
-                          SizedBox(width: 16),
-                          _LegendDot(color: Color(0xFF059669), label: 'Lembap\n(%)'),
-                        ],
+                      Icon(Icons.history_edu_rounded, size: 20, color: Color(0xFF059669)),
+                      SizedBox(width: 8),
+                      Text(
+                        'Buku Catatan Alat',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF1E293B)),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-
-                  // Chart
-                  SizedBox(
-                    height: 192,
-                    child: chartData.isEmpty
-                        ? const Center(child: Text('Tidak ada data', style: TextStyle(color: Color(0xFF94A3B8))))
-                        : LineChart(
-                            LineChartData(
-                              gridData: const FlGridData(show: false),
-                              borderData: FlBorderData(show: false),
-                              titlesData: FlTitlesData(
-                                leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                bottomTitles: AxisTitles(
-                                  sideTitles: SideTitles(
-                                    showTitles: true,
-                                    getTitlesWidget: (val, _) {
-                                      final idx = val.toInt();
-                                      if (idx < 0 || idx >= chartData.length) return const SizedBox.shrink();
-                                      if (idx % 2 != 0) return const SizedBox.shrink();
-                                      return Padding(
-                                        padding: const EdgeInsets.only(top: 8),
-                                        child: Text(
-                                          chartData[idx].label,
-                                          style: const TextStyle(fontSize: 9, color: Color(0xFF94A3B8), fontWeight: FontWeight.w600),
-                                        ),
-                                      );
-                                    },
-                                    reservedSize: 28,
-                                  ),
-                                ),
-                              ),
-                              minY: 0, maxY: 100,
-                              lineBarsData: [
-                                _buildLine(chartData.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.suhu)).toList(), const Color(0xFFFBBF24)),
-                                _buildLine(chartData.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.lembab)).toList(), const Color(0xFF059669)),
-                              ],
-                            ),
-                          ),
+                  const SizedBox(height: 20),
+                  
+                  // Activity Log Container
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: _ActivityTimeline(activities: displayActivities.take(10).toList()),
                   ),
-                  const SizedBox(height: 40),
-
-                  // Activity log
-                  const Text('Buku Catatan Alat',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF1E293B))),
-                  const SizedBox(height: 16),
-                  _ActivityTimeline(activities: displayActivities.take(10).toList()),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -203,12 +306,105 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return LineChartBarData(
       spots: spots,
       isCurved: true,
+      curveSmoothness: 0.3,
       color: color,
-      barWidth: 3,
-      dotData: const FlDotData(show: false),
+      barWidth: 3.5,
+      isStrokeCapRound: true,
+      dotData: FlDotData(
+        show: true,
+        getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+          radius: 4,
+          color: Colors.white,
+          strokeWidth: 2,
+          strokeColor: color,
+        ),
+      ),
       belowBarData: BarAreaData(
         show: true,
-        color: color.withValues(alpha: 0.05),
+        color: color.withValues(alpha: 0.1),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            color.withValues(alpha: 0.2),
+            color.withValues(alpha: 0.0),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// Screen Header
+// ═══════════════════════════════════════════════════
+class _ScreenHeader extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+
+  const _ScreenHeader({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF047857), Color(0xFF059669), Color(0xFF10B981)],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, size: 24, color: Colors.white),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.white.withValues(alpha: 0.8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -229,9 +425,19 @@ class _LegendDot extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(width: 8, height: 8, decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
-        const SizedBox(width: 4),
-        Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFF475569))),
+        Container(
+          width: 10, 
+          height: 10, 
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(3), 
+            color: color,
+          )
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label, 
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF64748B)),
+        ),
       ],
     );
   }
@@ -244,11 +450,14 @@ class _ActivityTimeline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (activities.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 16),
-        child: Text('Belum ada aktivitas.', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13)),
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 24),
+          child: Text('Belum ada aktivitas tercatat', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13, fontWeight: FontWeight.w500)),
+        ),
       );
     }
+    
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -257,42 +466,88 @@ class _ActivityTimeline extends StatelessWidget {
           Column(
             children: [
               const SizedBox(height: 6),
-              Expanded(child: Container(width: 2, color: const Color(0xFFF1F5F9))),
+              Expanded(
+                child: Container(
+                  width: 2, 
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE2E8F0),
+                    borderRadius: BorderRadius.circular(1),
+                  ),
+                )
+              ),
             ],
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 20),
           // Items
           Expanded(
             child: Column(
               children: activities.asMap().entries.map((e) {
+                final isLast = e.key == activities.length - 1;
                 final log = e.value;
+                // Determine icon and color based on activity content if possible
+                Color dotColor = const Color(0xFF059669);
+                IconData actIcon = Icons.notifications_none_rounded;
+                
+                final lowerKet = log.keterangan.toLowerCase();
+                if (lowerKet.contains('suhu') || lowerKet.contains('kipas') || lowerKet.contains('panas')) {
+                  dotColor = const Color(0xFFF59E0B);
+                  actIcon = Icons.thermostat_rounded;
+                } else if (lowerKet.contains('lembab') || lowerKet.contains('embun') || lowerKet.contains('pompa')) {
+                  dotColor = const Color(0xFF0EA5E9);
+                  actIcon = Icons.water_drop_rounded;
+                }
+
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 24),
+                  padding: EdgeInsets.only(bottom: isLast ? 0 : 28),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Dot (placed relative to the line)
+                      // Dot icon (placed relative to the line)
                       Transform.translate(
-                        offset: const Offset(-24, 4),
+                        offset: const Offset(-33, 0),
                         child: Container(
-                          width: 12, height: 12,
+                          padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            shape: BoxShape.circle,
                             color: Colors.white,
-                            border: Border.all(color: const Color(0xFF059669), width: 2),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFFE2E8F0), width: 2),
+                          ),
+                          child: Container(
+                            width: 10, height: 10,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: dotColor,
+                            ),
                           ),
                         ),
                       ),
+                      
+                      Transform.translate(
+                        offset: const Offset(-8, 0),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: dotColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(actIcon, size: 16, color: dotColor),
+                        ),
+                      ),
+
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              DateFormat('HH:mm').format(DateTime.fromMillisecondsSinceEpoch(log.waktuKejadian)),
-                              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8)),
+                              log.keterangan, 
+                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1E293B), height: 1.3),
                             ),
-                            const SizedBox(height: 2),
-                            Text(log.keterangan, style: const TextStyle(fontSize: 13, color: Color(0xFF374151), height: 1.4)),
+                            const SizedBox(height: 4),
+                            Text(
+                              DateFormat('dd MMM yyyy • HH:mm').format(DateTime.fromMillisecondsSinceEpoch(log.waktuKejadian)),
+                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF94A3B8)),
+                            ),
                           ],
                         ),
                       ),
@@ -303,43 +558,6 @@ class _ActivityTimeline extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _AppHeader extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        decoration: const BoxDecoration(color: Colors.white, border: Border(bottom: BorderSide(color: Color(0xFFF9FAFB)))),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Row(children: [
-              Icon(Icons.eco_rounded, size: 22, color: Color(0xFF059669)),
-              SizedBox(width: 8),
-              Text('SmartGreen', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Color(0xFF059669))),
-            ]),
-            IconButton(
-              icon: const Icon(Icons.menu_rounded, color: Color(0xFF475569)),
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('Menu navigasi akan segera hadir'),
-                    backgroundColor: const Color(0xFF1E293B),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
       ),
     );
   }
