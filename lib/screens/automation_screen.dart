@@ -67,219 +67,172 @@ class _AutomationScreenState extends State<AutomationScreen> {
     final presets = provider.presets;
 
     if (activeGreenhouse == null) {
-      return const Scaffold(
-        backgroundColor: Colors.white,
-        body: Center(child: Text('Belum ada lahan', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700))),
+      return Scaffold(
+        backgroundColor: const Color(0xFFF6F8FB),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFECFDF5),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: const Icon(Icons.auto_mode_rounded,
+                    size: 48, color: Color(0xFF059669)),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Belum ada lahan',
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1E293B)),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
     final suhuRule = rules.where((r) => r.parameter == 'suhu').firstOrNull;
-    final lembabRule = rules.where((r) => r.parameter == 'kelembaban').firstOrNull;
+    final lembabRule =
+        rules.where((r) => r.parameter == 'kelembaban').firstOrNull;
 
     String getDeviceName(int deviceId) =>
-        devices.where((d) => d.deviceId == deviceId).firstOrNull?.namaAlat ?? '';
+        devices.where((d) => d.deviceId == deviceId).firstOrNull?.namaAlat ??
+        '';
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF6F8FB),
       body: Stack(
         children: [
           Column(
             children: [
-              _AppHeader(),
+              // ── Header ──
+              _ScreenHeader(
+                title: 'Otomasi',
+                subtitle: 'Atur batas aman secara otomatis',
+                icon: Icons.auto_mode_rounded,
+              ),
+              // ── Content ──
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Master toggle card
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: const Color(0xFFF1F5F9)),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10)],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Otomasi Lahan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF1E293B))),
-                                SizedBox(height: 2),
-                                Text('Aktifkan Mode Otomatis', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
-                              ],
-                            ),
-                            ToggleSwitch(checked: _masterToggle, onChange: () => setState(() => _masterToggle = !_masterToggle)),
-                          ],
-                        ),
+                      // ── Master Toggle ──
+                      _MasterToggleCard(
+                        isOn: _masterToggle,
+                        onToggle: () =>
+                            setState(() => _masterToggle = !_masterToggle),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 22),
 
-                      const Text('Setingan Batas Aman', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF1E293B))),
-                      const SizedBox(height: 16),
+                      // ── Section Title ──
+                      const _SectionTitle(
+                          title: 'Batas Aman', icon: Icons.shield_rounded),
+                      const SizedBox(height: 14),
 
-                      // Suhu Rule
+                      // ── Suhu Rule Card ──
                       if (suhuRule != null)
-                        Opacity(
+                        AnimatedOpacity(
                           opacity: _masterToggle ? 1.0 : 0.4,
+                          duration: const Duration(milliseconds: 200),
                           child: IgnorePointer(
                             ignoring: !_masterToggle,
-                            child: Container(
-                              margin: const EdgeInsets.only(bottom: 16),
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                border: Border.all(color: const Color(0xFFF1F5F9)),
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 20)],
-                              ),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(children: [
-                                        const Icon(Icons.thermostat_rounded, size: 18, color: Color(0xFFEF4444)),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          'Jika Suhu ${suhuRule.kondisi == '>' ? 'Lebih' : 'Kurang'} Dari:',
-                                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
-                                        ),
-                                      ]),
-                                      Text(
-                                        '${suhuRule.nilaiAmbang.round()}°C',
-                                        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFFEF4444), letterSpacing: -1),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 20),
-                                  _SliderVisual(
-                                    value: suhuRule.nilaiAmbang,
-                                    min: 20, max: 40,
-                                    color: const Color(0xFFEF4444),
-                                    trackColor: const Color(0xFFFEE2E2),
-                                    minLabel: '20°C', maxLabel: '40°C',
-                                  ),
-                                  const SizedBox(height: 16),
-                                  const Divider(color: Color(0xFFF1F5F9)),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        'Nyalakan ${getDeviceName(suhuRule.deviceId).replaceAll('Pendingin', '').trim()}',
-                                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
-                                      ),
-                                      ToggleSwitch(
-                                        checked: suhuRule.statusAktif,
-                                        onChange: () => provider.toggleRule(suhuRule.ruleId!, suhuRule.statusAktif),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                            child: _RuleCard(
+                              icon: Icons.thermostat_rounded,
+                              title: 'Batas Suhu',
+                              condition:
+                                  'Jika suhu ${suhuRule.kondisi == '>' ? 'lebih' : 'kurang'} dari',
+                              value: suhuRule.nilaiAmbang.round(),
+                              unit: '°C',
+                              gradientColors: const [
+                                Color(0xFFFF6B6B),
+                                Color(0xFFFF8E53)
+                              ],
+                              bgColor: const Color(0xFFFFF5F5),
+                              sliderValue: suhuRule.nilaiAmbang,
+                              sliderMin: 20,
+                              sliderMax: 40,
+                              sliderMinLabel: '20°C',
+                              sliderMaxLabel: '40°C',
+                              actionLabel:
+                                  'Nyalakan ${getDeviceName(suhuRule.deviceId).replaceAll('Pendingin', '').trim()}',
+                              isRuleActive: suhuRule.statusAktif,
+                              onRuleToggle: () => provider.toggleRule(
+                                  suhuRule.ruleId!, suhuRule.statusAktif),
                             ),
                           ),
                         ),
 
-                      // Kelembaban Rule
+                      // ── Kelembaban Rule Card ──
                       if (lembabRule != null)
-                        Opacity(
+                        AnimatedOpacity(
                           opacity: _masterToggle ? 1.0 : 0.4,
+                          duration: const Duration(milliseconds: 200),
                           child: IgnorePointer(
                             ignoring: !_masterToggle,
-                            child: Container(
-                              margin: const EdgeInsets.only(bottom: 24),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                border: Border.all(color: const Color(0xFFD1FAE5)),
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [BoxShadow(color: const Color(0xFF059669).withValues(alpha: 0.08), blurRadius: 20)],
-                              ),
-                              child: Stack(
-                                children: [
-                                  Positioned(
-                                    left: 0, top: 0, bottom: 0,
-                                    child: Container(
-                                      width: 4,
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFF059669),
-                                        borderRadius: BorderRadius.only(topLeft: Radius.circular(16), bottomLeft: Radius.circular(16)),
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(20),
-                                    child: Column(
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Row(children: [
-                                              const Icon(Icons.water_drop_rounded, size: 18, color: Color(0xFF0D9488)),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                'Jika Lembap ${lembabRule.kondisi == '<' ? 'Kurang' : 'Lebih'} Dari:',
-                                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
-                                              ),
-                                            ]),
-                                            Text(
-                                              '${lembabRule.nilaiAmbang.round()}%',
-                                              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFF0D9488), letterSpacing: -1),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 20),
-                                        _SliderVisual(
-                                          value: lembabRule.nilaiAmbang,
-                                          min: 40, max: 90,
-                                          color: const Color(0xFF059669),
-                                          trackColor: const Color(0xFFECFDF5),
-                                          minLabel: '40%', maxLabel: '90%',
-                                        ),
-                                        const SizedBox(height: 16),
-                                        const Divider(color: Color(0xFFECFDF5)),
-                                        const SizedBox(height: 8),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            const Text('Nyalakan Semprotan', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF374151))),
-                                            ToggleSwitch(
-                                              checked: lembabRule.statusAktif,
-                                              onChange: () => provider.toggleRule(lembabRule.ruleId!, lembabRule.statusAktif),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            child: _RuleCard(
+                              icon: Icons.water_drop_rounded,
+                              title: 'Batas Kelembaban',
+                              condition:
+                                  'Jika lembap ${lembabRule.kondisi == '<' ? 'kurang' : 'lebih'} dari',
+                              value: lembabRule.nilaiAmbang.round(),
+                              unit: '%',
+                              gradientColors: const [
+                                Color(0xFF4FACFE),
+                                Color(0xFF00F2FE)
+                              ],
+                              bgColor: const Color(0xFFF0F9FF),
+                              sliderValue: lembabRule.nilaiAmbang,
+                              sliderMin: 40,
+                              sliderMax: 90,
+                              sliderMinLabel: '40%',
+                              sliderMaxLabel: '90%',
+                              actionLabel: 'Nyalakan Semprotan',
+                              isRuleActive: lembabRule.statusAktif,
+                              onRuleToggle: () => provider.toggleRule(
+                                  lembabRule.ruleId!, lembabRule.statusAktif),
                             ),
                           ),
                         ),
 
-                      // Presets
-                      const Text('Mode Tanaman (Preset)', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF1E293B))),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 6),
+
+                      // ── Section Title ──
+                      const _SectionTitle(
+                          title: 'Mode Tanaman', icon: Icons.eco_rounded),
+                      const SizedBox(height: 14),
+
+                      // ── Presets Grid ──
                       GridView.count(
                         crossAxisCount: 2,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 14,
+                        mainAxisSpacing: 14,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
+                        childAspectRatio: 1.1,
                         children: [
                           ...presets.map((preset) {
-                            final isActive = activeGreenhouse.activePresetId == preset.presetId;
+                            final isActive = activeGreenhouse.activePresetId ==
+                                preset.presetId;
                             return _PresetCard(
                               preset: preset,
                               isActive: isActive,
                               onTap: () => provider.applyPreset(preset),
-                              onEdit: (e) { e.stopPropagation(); _openAddPreset(preset: preset); },
-                              onDelete: (e) { e.stopPropagation(); provider.deletePreset(preset.presetId!); },
+                              onEdit: (e) {
+                                e.stopPropagation();
+                                _openAddPreset(preset: preset);
+                              },
+                              onDelete: (e) {
+                                e.stopPropagation();
+                                provider.deletePreset(preset.presetId!);
+                              },
                             );
                           }),
                           _AddPresetButton(onTap: () => _openAddPreset()),
@@ -311,62 +264,428 @@ class _AutomationScreenState extends State<AutomationScreen> {
   }
 }
 
-class _SliderVisual extends StatelessWidget {
-  final double value, min, max;
-  final Color color, trackColor;
-  final String minLabel, maxLabel;
+// ═══════════════════════════════════════════════════
+// Screen Header
+// ═══════════════════════════════════════════════════
+class _ScreenHeader extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
 
-  const _SliderVisual({
-    required this.value, required this.min, required this.max,
-    required this.color, required this.trackColor,
-    required this.minLabel, required this.maxLabel,
+  const _ScreenHeader({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
   });
 
   @override
   Widget build(BuildContext context) {
-    final pct = ((value - min) / (max - min)).clamp(0.0, 1.0);
-    return Column(
-      children: [
-        LayoutBuilder(builder: (ctx, box) {
-          final w = box.maxWidth;
-          return SizedBox(
-            height: 20,
-            child: Stack(
-              alignment: Alignment.centerLeft,
-              children: [
-                Container(height: 8, decoration: BoxDecoration(color: trackColor, borderRadius: BorderRadius.circular(4))),
-                Container(width: w * pct, height: 8, decoration: BoxDecoration(color: color.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(4))),
-                Positioned(
-                  left: (w * pct - 8).clamp(0.0, w - 16),
-                  child: Container(
-                    width: 16, height: 16,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: color,
-                      border: Border.all(color: Colors.white, width: 2),
-                      boxShadow: [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 4)],
-                    ),
-                  ),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF047857), Color(0xFF059669), Color(0xFF10B981)],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-              ],
-            ),
-          );
-        }),
-        const SizedBox(height: 4),
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text(minLabel, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8))),
-          Text(maxLabel, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8))),
-        ]),
+                child: Icon(icon, size: 24, color: Colors.white),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.white.withValues(alpha: 0.8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// Section Title
+// ═══════════════════════════════════════════════════
+class _SectionTitle extends StatelessWidget {
+  final String title;
+  final IconData icon;
+
+  const _SectionTitle({required this.title, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: const Color(0xFF059669)),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF1E293B),
+          ),
+        ),
       ],
     );
   }
 }
 
-// Hack: wrap GestureTapDetails to allow stopPropagation-like behavior
+// ═══════════════════════════════════════════════════
+// Master Toggle Card
+// ═══════════════════════════════════════════════════
+class _MasterToggleCard extends StatelessWidget {
+  final bool isOn;
+  final VoidCallback onToggle;
+
+  const _MasterToggleCard({required this.isOn, required this.onToggle});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: isOn
+            ? const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF047857), Color(0xFF10B981)],
+              )
+            : null,
+        color: isOn ? null : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: isOn
+                ? const Color(0xFF059669).withValues(alpha: 0.2)
+                : Colors.black.withValues(alpha: 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: isOn
+                  ? Colors.white.withValues(alpha: 0.2)
+                  : const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              isOn ? Icons.bolt_rounded : Icons.power_settings_new_rounded,
+              size: 22,
+              color: isOn ? Colors.white : const Color(0xFF94A3B8),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Mode Otomatis',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: isOn ? Colors.white : const Color(0xFF1E293B),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  isOn ? 'Sistem berjalan otomatis' : 'Otomasi dinonaktifkan',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isOn
+                        ? Colors.white.withValues(alpha: 0.8)
+                        : const Color(0xFF94A3B8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ToggleSwitch(checked: isOn, onChange: onToggle),
+        ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// Rule Card
+// ═══════════════════════════════════════════════════
+class _RuleCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String condition;
+  final int value;
+  final String unit;
+  final List<Color> gradientColors;
+  final Color bgColor;
+  final double sliderValue, sliderMin, sliderMax;
+  final String sliderMinLabel, sliderMaxLabel;
+  final String actionLabel;
+  final bool isRuleActive;
+  final VoidCallback onRuleToggle;
+
+  const _RuleCard({
+    required this.icon,
+    required this.title,
+    required this.condition,
+    required this.value,
+    required this.unit,
+    required this.gradientColors,
+    required this.bgColor,
+    required this.sliderValue,
+    required this.sliderMin,
+    required this.sliderMax,
+    required this.sliderMinLabel,
+    required this.sliderMaxLabel,
+    required this.actionLabel,
+    required this.isRuleActive,
+    required this.onRuleToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pct =
+        ((sliderValue - sliderMin) / (sliderMax - sliderMin)).clamp(0.0, 1.0);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: gradientColors[0].withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Top row: icon + title + value
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, size: 20, color: gradientColors[0]),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1E293B),
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      condition,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF94A3B8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Value badge
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: gradientColors),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '$value$unit',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Progress slider visual
+          LayoutBuilder(builder: (ctx, box) {
+            final w = box.maxWidth;
+            return Column(
+              children: [
+                SizedBox(
+                  height: 20,
+                  child: Stack(
+                    alignment: Alignment.centerLeft,
+                    children: [
+                      // Track
+                      Container(
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: bgColor,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                      // Fill
+                      Container(
+                        width: w * pct,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(colors: gradientColors),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                      // Thumb
+                      Positioned(
+                        left: (w * pct - 8).clamp(0.0, w - 16),
+                        child: Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                            border:
+                                Border.all(color: gradientColors[0], width: 3),
+                            boxShadow: [
+                              BoxShadow(
+                                color: gradientColors[0].withValues(alpha: 0.3),
+                                blurRadius: 6,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(sliderMinLabel,
+                        style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFFCBD5E1))),
+                    Text(sliderMaxLabel,
+                        style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFFCBD5E1))),
+                  ],
+                ),
+              ],
+            );
+          }),
+          const SizedBox(height: 12),
+
+          // Divider
+          Container(height: 1, color: const Color(0xFFF1F5F9)),
+          const SizedBox(height: 12),
+
+          // Action toggle
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    isRuleActive
+                        ? Icons.check_circle_rounded
+                        : Icons.circle_outlined,
+                    size: 16,
+                    color: isRuleActive
+                        ? const Color(0xFF059669)
+                        : const Color(0xFFCBD5E1),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    actionLabel,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF475569),
+                    ),
+                  ),
+                ],
+              ),
+              ToggleSwitch(
+                checked: isRuleActive,
+                onChange: onRuleToggle,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// Hack: wrap for stopPropagation behavior
+// ═══════════════════════════════════════════════════
 class _TapEvent {
   void stopPropagation() {}
 }
 
+// ═══════════════════════════════════════════════════
+// Preset Card
+// ═══════════════════════════════════════════════════
 class _PresetCard extends StatelessWidget {
   final PlantPreset preset;
   final bool isActive;
@@ -374,75 +693,119 @@ class _PresetCard extends StatelessWidget {
   final void Function(_TapEvent) onEdit;
   final void Function(_TapEvent) onDelete;
 
-  const _PresetCard({required this.preset, required this.isActive, required this.onTap, required this.onEdit, required this.onDelete});
+  const _PresetCard(
+      {required this.preset,
+      required this.isActive,
+      required this.onTap,
+      required this.onEdit,
+      required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: isActive ? null : onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(12),
+        duration: const Duration(milliseconds: 250),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFFECFDF5) : Colors.white,
-          border: Border.all(color: isActive ? const Color(0xFF6EE7B7) : const Color(0xFFF1F5F9)),
-          borderRadius: BorderRadius.circular(12),
+          color: Colors.white,
+          border: Border.all(
+            color: isActive ? const Color(0xFF34D399) : const Color(0xFFE2E8F0),
+            width: isActive ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            if (isActive)
+              BoxShadow(
+                color: const Color(0xFF059669).withValues(alpha: 0.1),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              )
+            else
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+          ],
         ),
         child: Stack(
           children: [
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  width: 40, height: 40,
+                // Icon
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: isActive ? const Color(0xFF047857) : const Color(0xFFF1F5F9),
+                    gradient: isActive
+                        ? const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Color(0xFF047857), Color(0xFF10B981)],
+                          )
+                        : null,
+                    color: isActive ? null : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(Icons.eco_rounded, size: 20, color: isActive ? Colors.white : const Color(0xFF94A3B8)),
+                  child: Icon(
+                    Icons.eco_rounded,
+                    size: 22,
+                    color: isActive ? Colors.white : const Color(0xFFCBD5E1),
+                  ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Text(
                   preset.namaTanaman,
                   textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 12, fontWeight: FontWeight.w700,
-                    color: isActive ? const Color(0xFF1E293B) : const Color(0xFF94A3B8),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: isActive
+                        ? const Color(0xFF1E293B)
+                        : const Color(0xFF94A3B8),
                   ),
                 ),
+                const SizedBox(height: 4),
+                // Status indicator
+                if (isActive)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFECFDF5),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'Aktif',
+                      style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF059669)),
+                    ),
+                  ),
               ],
             ),
+            // Edit / delete buttons
             if (isActive)
               Positioned(
-                top: 0, right: 0,
+                top: 0,
+                right: 0,
                 child: Row(
                   children: [
-                    GestureDetector(
+                    _MiniIconButton(
+                      icon: Icons.edit_rounded,
                       onTap: () => onEdit(_TapEvent()),
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: const Color(0xFFF1F5F9)),
-                          borderRadius: BorderRadius.circular(6),
-                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4)],
-                        ),
-                        child: const Icon(Icons.edit_rounded, size: 12, color: Color(0xFF94A3B8)),
-                      ),
                     ),
                     const SizedBox(width: 4),
-                    GestureDetector(
+                    _MiniIconButton(
+                      icon: Icons.delete_rounded,
+                      color: const Color(0xFFEF4444),
                       onTap: () => onDelete(_TapEvent()),
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: const Color(0xFFF1F5F9)),
-                          borderRadius: BorderRadius.circular(6),
-                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4)],
-                        ),
-                        child: const Icon(Icons.delete_rounded, size: 12, color: Color(0xFF94A3B8)),
-                      ),
                     ),
                   ],
                 ),
@@ -454,6 +817,46 @@ class _PresetCard extends StatelessWidget {
   }
 }
 
+// ═══════════════════════════════════════════════════
+// Mini Icon Button
+// ═══════════════════════════════════════════════════
+class _MiniIconButton extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _MiniIconButton({
+    required this.icon,
+    this.color = const Color(0xFF94A3B8),
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 4,
+            ),
+          ],
+        ),
+        child: Icon(icon, size: 12, color: color),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// Add Preset Button
+// ═══════════════════════════════════════════════════
 class _AddPresetButton extends StatelessWidget {
   final VoidCallback onTap;
   const _AddPresetButton({required this.onTap});
@@ -464,15 +867,30 @@ class _AddPresetButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(color: const Color(0xFFE2E8F0), style: BorderStyle.solid),
-          borderRadius: BorderRadius.circular(12),
+          color: Colors.white,
+          border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+          borderRadius: BorderRadius.circular(18),
         ),
-        child: const Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('+', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: Color(0xFF64748B))),
-            SizedBox(height: 4),
-            Text('Tambah Preset', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF64748B))),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.add_rounded,
+                  size: 24, color: Color(0xFF94A3B8)),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Tambah Preset',
+              style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF94A3B8)),
+            ),
           ],
         ),
       ),
@@ -480,6 +898,9 @@ class _AddPresetButton extends StatelessWidget {
   }
 }
 
+// ═══════════════════════════════════════════════════
+// Preset Modal
+// ═══════════════════════════════════════════════════
 class _PresetModal extends StatefulWidget {
   final TextEditingController namaController;
   final double batasSuhu, batasKelembaban;
@@ -488,10 +909,14 @@ class _PresetModal extends StatefulWidget {
   final VoidCallback onCancel, onSave;
 
   const _PresetModal({
-    required this.namaController, required this.batasSuhu,
-    required this.batasKelembaban, required this.isEditing,
-    required this.onSuhuChanged, required this.onKelembapanChanged,
-    required this.onCancel, required this.onSave,
+    required this.namaController,
+    required this.batasSuhu,
+    required this.batasKelembaban,
+    required this.isEditing,
+    required this.onSuhuChanged,
+    required this.onKelembapanChanged,
+    required this.onCancel,
+    required this.onSave,
   });
 
   @override
@@ -499,9 +924,6 @@ class _PresetModal extends StatefulWidget {
 }
 
 class _PresetModalState extends State<_PresetModal> {
-  // FIX: Gunakan controller sebagai state variable, BUKAN inline di build()
-  // Sebelumnya: TextEditingController(text: _suhu.toString()) di dalam build()
-  // Bug: controller dibuat ulang setiap rebuild → cursor lompat ke awal
   late TextEditingController _suhuController;
   late TextEditingController _lembabController;
   late double _suhu, _lembab;
@@ -522,149 +944,248 @@ class _PresetModalState extends State<_PresetModal> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFF0F172A).withValues(alpha: 0.4),
-      child: Center(
-        child: SingleChildScrollView(
-          child: Container(
-            margin: const EdgeInsets.all(24),
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  Text(widget.isEditing ? 'Edit Preset' : 'Tambah Preset',
-                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Color(0xFF1E293B))),
-                  IconButton(icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)), onPressed: widget.onCancel),
-                ]),
-                const SizedBox(height: 16),
-                const Text('NAMA TANAMAN', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF64748B), letterSpacing: 0.8)),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: widget.namaController,
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    hintText: 'Misal: Tomat',
-                    filled: true, fillColor: const Color(0xFFF8FAFC),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF059669))),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(children: [
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Text('BATAS SUHU (°C)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF64748B), letterSpacing: 0.8)),
-                    const SizedBox(height: 6),
-                    TextField(
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      controller: _suhuController,
-                      onChanged: (v) {
-                        final d = double.tryParse(v);
-                        if (d != null) {
-                          _suhu = d;
-                          widget.onSuhuChanged(d);
-                        }
-                      },
-                      decoration: InputDecoration(
-                        hintText: '20–40',
-                        filled: true, fillColor: const Color(0xFFF8FAFC),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF059669))),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                        suffixText: '°C',
-                        suffixStyle: const TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ])),
-                  const SizedBox(width: 12),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Text('BATAS LEMBAP (%)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF64748B), letterSpacing: 0.8)),
-                    const SizedBox(height: 6),
-                    TextField(
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      controller: _lembabController,
-                      onChanged: (v) {
-                        final d = double.tryParse(v);
-                        if (d != null) {
-                          _lembab = d;
-                          widget.onKelembapanChanged(d);
-                        }
-                      },
-                      decoration: InputDecoration(
-                        hintText: '40–90',
-                        filled: true, fillColor: const Color(0xFFF8FAFC),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF059669))),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                        suffixText: '%',
-                        suffixStyle: const TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ])),
-                ]),
-                const SizedBox(height: 24),
-                ListenableBuilder(
-                  listenable: widget.namaController,
-                  builder: (context, _) => ElevatedButton(
-                    onPressed: widget.namaController.text.trim().isEmpty ? null : widget.onSave,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF059669),
-                      disabledBackgroundColor: const Color(0xFFCBD5E1),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: Text(widget.isEditing ? 'Simpan Perubahan' : 'Simpan Preset',
-                        style: const TextStyle(fontWeight: FontWeight.w700)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+  InputDecoration _inputDecoration(String hint, String suffix) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: const TextStyle(color: Color(0xFFCBD5E1)),
+      filled: true,
+      fillColor: const Color(0xFFF8FAFC),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
       ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFF059669), width: 2),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      suffixText: suffix,
+      suffixStyle: const TextStyle(
+          color: Color(0xFF94A3B8), fontWeight: FontWeight.w600),
     );
   }
-}
 
-class _AppHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Row(children: [
-              Icon(Icons.eco_rounded, size: 22, color: Color(0xFF059669)),
-              SizedBox(width: 8),
-              Text('SmartGreen', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Color(0xFF059669))),
-            ]),
-            IconButton(
-              icon: const Icon(Icons.menu_rounded, color: Color(0xFF475569)),
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('Menu navigasi akan segera hadir'),
-                    backgroundColor: const Color(0xFF1E293B),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              },
+    return GestureDetector(
+      onTap: widget.onCancel,
+      child: Container(
+        color: const Color(0xFF0F172A).withValues(alpha: 0.5),
+        child: Center(
+          child: GestureDetector(
+            onTap: () {}, // Prevent dismiss on modal tap
+            child: SingleChildScrollView(
+              child: Container(
+                margin: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 30,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Header
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFECFDF5),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                widget.isEditing
+                                    ? Icons.edit_rounded
+                                    : Icons.add_rounded,
+                                size: 18,
+                                color: const Color(0xFF059669),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              widget.isEditing
+                                  ? 'Edit Preset'
+                                  : 'Tambah Preset',
+                              style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF1E293B)),
+                            ),
+                          ],
+                        ),
+                        GestureDetector(
+                          onTap: widget.onCancel,
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.close_rounded,
+                                size: 18, color: Color(0xFF94A3B8)),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Name field
+                    const Text(
+                      'NAMA TANAMAN',
+                      style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF64748B),
+                          letterSpacing: 0.8),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: widget.namaController,
+                      autofocus: true,
+                      decoration: _inputDecoration('Misal: Tomat', ''),
+                    ),
+                    const SizedBox(height: 18),
+
+                    // Suhu & Kelembaban fields
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'BATAS SUHU',
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF64748B),
+                                    letterSpacing: 0.8),
+                              ),
+                              const SizedBox(height: 8),
+                              TextField(
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
+                                controller: _suhuController,
+                                onChanged: (v) {
+                                  final d = double.tryParse(v);
+                                  if (d != null) {
+                                    _suhu = d;
+                                    widget.onSuhuChanged(d);
+                                  }
+                                },
+                                decoration: _inputDecoration('20–40', '°C'),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'BATAS LEMBAP',
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF64748B),
+                                    letterSpacing: 0.8),
+                              ),
+                              const SizedBox(height: 8),
+                              TextField(
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
+                                controller: _lembabController,
+                                onChanged: (v) {
+                                  final d = double.tryParse(v);
+                                  if (d != null) {
+                                    _lembab = d;
+                                    widget.onKelembapanChanged(d);
+                                  }
+                                },
+                                decoration: _inputDecoration('40–90', '%'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 28),
+
+                    // Save button
+                    ListenableBuilder(
+                      listenable: widget.namaController,
+                      builder: (context, _) {
+                        final isEnabled =
+                            widget.namaController.text.trim().isNotEmpty;
+                        return GestureDetector(
+                          onTap: isEnabled ? widget.onSave : null,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            decoration: BoxDecoration(
+                              gradient: isEnabled
+                                  ? const LinearGradient(
+                                      colors: [
+                                        Color(0xFF047857),
+                                        Color(0xFF10B981)
+                                      ],
+                                    )
+                                  : null,
+                              color: isEnabled ? null : const Color(0xFFE2E8F0),
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: isEnabled
+                                  ? [
+                                      BoxShadow(
+                                        color: const Color(0xFF059669)
+                                            .withValues(alpha: 0.3),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ]
+                                  : [],
+                            ),
+                            child: Center(
+                              child: Text(
+                                widget.isEditing
+                                    ? 'Simpan Perubahan'
+                                    : 'Simpan Preset',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: isEnabled
+                                      ? Colors.white
+                                      : const Color(0xFF94A3B8),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ],
+          ),
         ),
       ),
     );
