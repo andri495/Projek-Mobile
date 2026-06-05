@@ -5,6 +5,7 @@ import 'dart:io';
 import '../providers/app_provider.dart';
 import '../models/greenhouse.dart';
 import '../widgets/toggle_switch.dart';
+import '../utils/app_colors.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -21,6 +22,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _showGHModal = false;
   bool _showAddModal = false;
   bool _showEditModal = false;
+
+  String _language = 'Indonesia';
 
   Greenhouse? _editingGreenhouse;
   final _lahanController = TextEditingController();
@@ -88,24 +91,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _deleteLahan(Greenhouse gh) async {
+    final provider = context.read<AppProvider>();
+    final isDark = provider.isDarkMode;
     // Tampilkan dialog konfirmasi
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.cardBg(isDark),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Hapus Lahan?',
+        title: Text('Hapus Lahan?',
             style: TextStyle(
-                fontWeight: FontWeight.w800, color: Color(0xFF1E293B))),
+                fontWeight: FontWeight.w800, color: AppColors.textPrimary(isDark))),
         content: Text(
             'Apakah Anda yakin ingin menghapus "${gh.namaLahan}"? Semua data alat dan riwayat pada lahan ini akan terhapus.',
-            style: const TextStyle(color: Color(0xFF64748B))),
+            style: TextStyle(color: AppColors.textSecondary(isDark))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Batal',
+            child: Text('Batal',
                 style: TextStyle(
-                    color: Color(0xFF94A3B8), fontWeight: FontWeight.w700)),
+                    color: AppColors.textMuted(isDark), fontWeight: FontWeight.w700)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -124,7 +129,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     if (confirm == true && mounted) {
-      final provider = context.read<AppProvider>();
       await provider.deleteGreenhouse(gh.greenhouseId!);
       _showToast('Lahan berhasil dihapus');
       if (provider.greenhouses.length <= 1) {
@@ -144,15 +148,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final provider = context.watch<AppProvider>();
     final user = provider.user;
     final greenhouses = provider.greenhouses;
+    final isDark = provider.isDarkMode;
 
-    if (user == null)
-      return const Scaffold(
-          backgroundColor: Color(0xFFF6F8FB), body: SizedBox.shrink());
+    if (user == null) {
+      return Scaffold(
+          backgroundColor: AppColors.background(isDark), body: const SizedBox.shrink());
+    }
 
     final isNetworkPhoto = user.fotoProfil.startsWith('http');
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FB),
+      backgroundColor: AppColors.background(isDark),
       body: Stack(
         children: [
           Column(
@@ -215,11 +221,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                      color: const Color(0xFFF6F8FB), width: 6),
+                                      color: AppColors.background(isDark), width: 6),
                                   boxShadow: [
                                     BoxShadow(
                                       color:
-                                          Colors.black.withValues(alpha: 0.1),
+                                          Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
                                       blurRadius: 20,
                                       offset: const Offset(0, 8),
                                     )
@@ -245,7 +251,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: Colors.white,
+                                    color: AppColors.cardBg(isDark),
                                     boxShadow: [
                                       BoxShadow(
                                           color: Colors.black
@@ -254,7 +260,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ],
                                   ),
                                   child: const Icon(Icons.camera_alt_rounded,
-                                      color: Color(0xFF059669), size: 16),
+                                      color: AppColors.primary, size: 16),
                                 ),
                               ),
                             ],
@@ -263,10 +269,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         const SizedBox(height: 12),
                         Text(
                           user.namaLengkap,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF1E293B),
+                              color: AppColors.textPrimary(isDark),
                               letterSpacing: -0.5),
                         ),
                         const SizedBox(height: 4),
@@ -280,10 +286,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           child: Text(
                             user.peran.toUpperCase(),
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w800,
-                                color: Color(0xFF059669),
+                                color: isDark ? AppColors.primaryLight : AppColors.primary,
                                 letterSpacing: 1.5),
                           ),
                         ),
@@ -300,20 +306,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
                   child: Column(
                     children: [
-                      _MenuSection(title: 'KELOLA LAHAN', children: [
+                      _MenuSection(title: 'KELOLA LAHAN', isDark: isDark, children: [
                         _MenuItem(
                             icon: Icons.grid_view_rounded,
                             label: 'Daftar Rumah Kaca',
-                            onTap: () => setState(() => _showGHModal = true)),
+                            onTap: () => setState(() => _showGHModal = true),
+                            isDark: isDark),
                         _MenuItem(
                             icon: Icons.add_business_rounded,
                             label: 'Tambah Lahan Baru',
-                            iconColor: const Color(0xFF059669),
-                            onTap: () => setState(() => _showAddModal = true)),
+                            iconColor: AppColors.primary,
+                            onTap: () => setState(() => _showAddModal = true),
+                            isDark: isDark),
+                        _MenuItem(
+                            icon: Icons.group_add_rounded,
+                            label: 'Berbagi Akses Lahan',
+                            onTap: () => _showToast('Membuka pengaturan akses...'),
+                            isDark: isDark),
                       ]),
                       const SizedBox(height: 24),
 
-                      _MenuSection(title: 'PENGATURAN APLIKASI', children: [
+                      _MenuSection(title: 'PREFERENSI', isDark: isDark, children: [
                         _MenuItem(
                           icon: Icons.notifications_active_rounded,
                           label: 'Notifikasi & Peringatan',
@@ -323,6 +336,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               checked: _notifEnabled,
                               onChange: () => setState(
                                   () => _notifEnabled = !_notifEnabled)),
+                          isDark: isDark,
+                        ),
+                        _MenuItem(
+                          icon: Icons.dark_mode_rounded,
+                          label: 'Mode Gelap',
+                          onTap: () => provider.toggleDarkMode(),
+                          trailing: ToggleSwitch(
+                              checked: isDark,
+                              onChange: () => provider.toggleDarkMode()),
+                          isDark: isDark,
                         ),
                         _MenuItem(
                           icon: Icons.thermostat_rounded,
@@ -334,25 +357,77 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           trailing: Row(
                             children: [
                               Text(_tempFormat,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 13,
-                                      color: Color(0xFF64748B),
+                                      color: AppColors.textSecondary(isDark),
                                       fontWeight: FontWeight.w600)),
                               const SizedBox(width: 8),
-                              const Icon(Icons.swap_horiz_rounded,
-                                  size: 16, color: Color(0xFFCBD5E1)),
+                              Icon(Icons.swap_horiz_rounded,
+                                  size: 16, color: AppColors.textHint(isDark)),
                             ],
                           ),
+                          isDark: isDark,
+                        ),
+                        _MenuItem(
+                          icon: Icons.language_rounded,
+                          label: 'Bahasa',
+                          onTap: () => setState(() => _language =
+                              _language == 'Indonesia'
+                                  ? 'English'
+                                  : 'Indonesia'),
+                          trailing: Row(
+                            children: [
+                              Text(_language,
+                                  style: TextStyle(
+                                      fontSize: 13,
+                                      color: AppColors.textSecondary(isDark),
+                                      fontWeight: FontWeight.w600)),
+                              const SizedBox(width: 8),
+                              Icon(Icons.swap_horiz_rounded,
+                                  size: 16, color: AppColors.textHint(isDark)),
+                            ],
+                          ),
+                          isDark: isDark,
                         ),
                       ]),
                       const SizedBox(height: 24),
 
-                      _MenuSection(title: 'BANTUAN', children: [
+                      _MenuSection(title: 'INTEGRASI & LANJUTAN', isDark: isDark, children: [
+                        _MenuItem(
+                            icon: Icons.mic_rounded,
+                            label: 'Integrasi Asisten Pintar',
+                            onTap: () => _showToast('Menghubungkan ke Google/Alexa...'),
+                            isDark: isDark),
+                        _MenuItem(
+                            icon: Icons.picture_as_pdf_rounded,
+                            label: 'Ekspor Data Laporan',
+                            onTap: () => _showToast('Menyiapkan dokumen laporan...'),
+                            isDark: isDark),
+                      ]),
+                      const SizedBox(height: 24),
+
+                      _MenuSection(title: 'KEAMANAN & BANTUAN', isDark: isDark, children: [
+                        _MenuItem(
+                            icon: Icons.lock_outline_rounded,
+                            label: 'Ganti Kata Sandi',
+                            onTap: () => _showToast('Membuka pengaturan keamanan...'),
+                            isDark: isDark),
                         _MenuItem(
                             icon: Icons.help_outline_rounded,
                             label: 'Panduan Penggunaan',
                             onTap: () =>
-                                _showToast('Membuka panduan penggunaan...')),
+                                _showToast('Membuka panduan penggunaan...'),
+                            isDark: isDark),
+                        _MenuItem(
+                            icon: Icons.support_agent_rounded,
+                            label: 'Hubungi Dukungan',
+                            onTap: () => _showToast('Menghubungkan ke CS...'),
+                            isDark: isDark),
+                        _MenuItem(
+                            icon: Icons.info_outline_rounded,
+                            label: 'Tentang Aplikasi',
+                            onTap: () => _showToast('Smart Greenhouse v1.0.0'),
+                            isDark: isDark),
                       ]),
                       const SizedBox(height: 40),
 
@@ -362,10 +437,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: AppColors.cardBg(isDark),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                                color: const Color(0xFFFECACA), width: 1.5),
+                                color: const Color(0xFFFECACA).withValues(alpha: isDark ? 0.2 : 1), width: 1.5),
                             boxShadow: [
                               BoxShadow(
                                 color: const Color(0xFFEF4444)
@@ -413,6 +488,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 });
               },
               onDelete: _deleteLahan,
+              isDark: isDark,
             ),
 
           // Add Lahan Modal
@@ -425,6 +501,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 setState(() => _showAddModal = false);
               },
               onSave: _addLahan,
+              isDark: isDark,
             ),
 
           // Edit Lahan Modal
@@ -440,6 +517,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 });
               },
               onSave: _editLahan,
+              isDark: isDark,
             ),
 
           // Toast
@@ -485,7 +563,8 @@ class _AvatarFallback extends StatelessWidget {
 class _MenuSection extends StatelessWidget {
   final String title;
   final List<Widget> children;
-  const _MenuSection({required this.title, required this.children});
+  final bool isDark;
+  const _MenuSection({required this.title, required this.children, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -495,19 +574,19 @@ class _MenuSection extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(left: 8, bottom: 12),
           child: Text(title,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF94A3B8),
+                  color: AppColors.textHint(isDark),
                   letterSpacing: 1.2)),
         ),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.cardBg(isDark),
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
+                color: AppColors.shadow(isDark),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               )
@@ -520,11 +599,11 @@ class _MenuSection extends StatelessWidget {
                 children: [
                   e.value,
                   if (!isLast)
-                    const Divider(
+                    Divider(
                         height: 1,
                         indent: 52,
                         endIndent: 20,
-                        color: Color(0xFFF1F5F9)),
+                        color: AppColors.divider(isDark)),
                 ],
               );
             }).toList(),
@@ -541,13 +620,15 @@ class _MenuItem extends StatelessWidget {
   final VoidCallback onTap;
   final Widget? trailing;
   final Color? iconColor;
+  final bool isDark;
 
   const _MenuItem(
       {required this.icon,
       required this.label,
       required this.onTap,
       this.trailing,
-      this.iconColor});
+      this.iconColor,
+      required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -561,25 +642,25 @@ class _MenuItem extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: (iconColor ?? const Color(0xFF64748B))
+                color: (iconColor ?? AppColors.textSecondary(isDark))
                     .withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon,
-                  size: 18, color: iconColor ?? const Color(0xFF64748B)),
+                  size: 18, color: iconColor ?? AppColors.textSecondary(isDark)),
             ),
             const SizedBox(width: 16),
             Expanded(
                 child: Text(label,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF334155)))),
+                        color: AppColors.textPrimary(isDark)))),
             if (trailing != null)
               trailing!
             else
-              const Icon(Icons.chevron_right_rounded,
-                  size: 20, color: Color(0xFFCBD5E1)),
+              Icon(Icons.chevron_right_rounded,
+                  size: 20, color: AppColors.textHint(isDark)),
           ],
         ),
       ),
@@ -592,12 +673,14 @@ class _GreenhouseModal extends StatelessWidget {
   final VoidCallback onClose;
   final void Function(Greenhouse) onEdit;
   final void Function(Greenhouse) onDelete;
+  final bool isDark;
 
   const _GreenhouseModal({
     required this.greenhouses,
     required this.onClose,
     required this.onEdit,
     required this.onDelete,
+    required this.isDark,
   });
 
   @override
@@ -611,7 +694,7 @@ class _GreenhouseModal extends StatelessWidget {
           constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.7),
           decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.cardBg(isDark),
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
@@ -630,18 +713,18 @@ class _GreenhouseModal extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFECFDF5),
+                        color: AppColors.primaryBg(isDark),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(Icons.grid_view_rounded,
-                          size: 18, color: Color(0xFF059669)),
+                          size: 18, color: AppColors.primary),
                     ),
                     const SizedBox(width: 12),
-                    const Text('Daftar Rumah Kaca',
+                    Text('Daftar Rumah Kaca',
                         style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF1E293B))),
+                            color: AppColors.textPrimary(isDark))),
                   ],
                 ),
                 GestureDetector(
@@ -649,22 +732,22 @@ class _GreenhouseModal extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF1F5F9),
+                      color: AppColors.cardBgLighter(isDark),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.close_rounded,
-                        size: 18, color: Color(0xFF94A3B8)),
+                    child: Icon(Icons.close_rounded,
+                        size: 18, color: AppColors.textSecondary(isDark)),
                   ),
                 ),
               ]),
               const SizedBox(height: 24),
               if (greenhouses.isEmpty)
-                const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
+                Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
                     child: Center(
                         child: Text('Belum ada lahan.',
                             style: TextStyle(
-                                color: Color(0xFF94A3B8),
+                                color: AppColors.textHint(isDark),
                                 fontWeight: FontWeight.w500)))),
               Flexible(
                 child: SingleChildScrollView(
@@ -675,14 +758,14 @@ class _GreenhouseModal extends StatelessWidget {
                               margin: const EdgeInsets.only(bottom: 12),
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: AppColors.cardBg(isDark),
                                 border:
-                                    Border.all(color: const Color(0xFFE2E8F0)),
+                                    Border.all(color: AppColors.border(isDark)),
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
                                       color:
-                                          Colors.black.withValues(alpha: 0.02),
+                                          AppColors.shadow(isDark),
                                       blurRadius: 4,
                                       offset: const Offset(0, 2))
                                 ],
@@ -692,11 +775,11 @@ class _GreenhouseModal extends StatelessWidget {
                                   Container(
                                     padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                        color: const Color(0xFFF8FAFC),
+                                        color: AppColors.cardBgDarker(isDark),
                                         borderRadius:
                                             BorderRadius.circular(12)),
                                     child: const Icon(Icons.eco_rounded,
-                                        color: Color(0xFF059669), size: 20),
+                                        color: AppColors.primary, size: 20),
                                   ),
                                   const SizedBox(width: 16),
                                   Expanded(
@@ -705,15 +788,15 @@ class _GreenhouseModal extends StatelessWidget {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(gh.namaLahan,
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.w700,
-                                                  color: Color(0xFF1E293B))),
+                                                  color: AppColors.textPrimary(isDark))),
                                           const SizedBox(height: 4),
                                           Text('Topik: ${gh.mqttTopic}',
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                   fontSize: 11,
-                                                  color: Color(0xFF64748B),
+                                                  color: AppColors.textSecondary(isDark),
                                                   fontWeight: FontWeight.w500)),
                                         ]),
                                   ),
@@ -721,8 +804,8 @@ class _GreenhouseModal extends StatelessWidget {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       IconButton(
-                                        icon: const Icon(Icons.edit_rounded,
-                                            size: 18, color: Color(0xFF64748B)),
+                                        icon: Icon(Icons.edit_rounded,
+                                            size: 18, color: AppColors.textSecondary(isDark)),
                                         padding: EdgeInsets.zero,
                                         constraints: const BoxConstraints(),
                                         onPressed: () => onEdit(gh),
@@ -758,11 +841,13 @@ class _AddLahanModal extends StatelessWidget {
   final TextEditingController controller;
   final bool isAdding;
   final VoidCallback onClose, onSave;
+  final bool isDark;
   const _AddLahanModal(
       {required this.controller,
       required this.isAdding,
       required this.onClose,
-      required this.onSave});
+      required this.onSave,
+      required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -774,7 +859,7 @@ class _AddLahanModal extends StatelessWidget {
             margin: const EdgeInsets.all(24),
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.cardBg(isDark),
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
@@ -795,18 +880,18 @@ class _AddLahanModal extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFECFDF5),
+                              color: AppColors.primaryBg(isDark),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Icon(Icons.add_business_rounded,
-                                size: 18, color: Color(0xFF059669)),
+                                size: 18, color: AppColors.primary),
                           ),
                           const SizedBox(width: 12),
-                          const Text('Lahan Baru',
+                          Text('Lahan Baru',
                               style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w800,
-                                  color: Color(0xFF1E293B))),
+                                  color: AppColors.textPrimary(isDark))),
                         ],
                       ),
                       GestureDetector(
@@ -814,41 +899,42 @@ class _AddLahanModal extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF1F5F9),
+                            color: AppColors.cardBgLighter(isDark),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.close_rounded,
-                              size: 18, color: Color(0xFF94A3B8)),
+                          child: Icon(Icons.close_rounded,
+                              size: 18, color: AppColors.textSecondary(isDark)),
                         ),
                       ),
                     ]),
                 const SizedBox(height: 24),
-                const Text('NAMA LAHAN BARU',
+                Text('NAMA LAHAN BARU',
                     style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF64748B),
+                        color: AppColors.textMuted(isDark),
                         letterSpacing: 1.0)),
                 const SizedBox(height: 8),
                 TextField(
                   controller: controller,
                   autofocus: true,
+                  style: TextStyle(color: AppColors.textPrimary(isDark)),
                   decoration: InputDecoration(
                     hintText: 'Misal: Rumah Kaca B',
-                    hintStyle: const TextStyle(
-                        color: Color(0xFFCBD5E1), fontWeight: FontWeight.w500),
+                    hintStyle: TextStyle(
+                        color: AppColors.textHint(isDark), fontWeight: FontWeight.w500),
                     filled: true,
-                    fillColor: const Color(0xFFF8FAFC),
+                    fillColor: AppColors.cardBgDarker(isDark),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                        borderSide: BorderSide(color: AppColors.border(isDark))),
                     enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                        borderSide: BorderSide(color: AppColors.border(isDark))),
                     focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
                         borderSide: const BorderSide(
-                            color: Color(0xFF059669), width: 2)),
+                            color: AppColors.primary, width: 2)),
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 16),
                   ),
@@ -871,13 +957,13 @@ class _AddLahanModal extends StatelessWidget {
                                   Color(0xFF10B981)
                                 ])
                               : null,
-                          color: isEnabled ? null : const Color(0xFFE2E8F0),
+                          color: isEnabled ? null : AppColors.border(isDark),
                           borderRadius: BorderRadius.circular(14),
                           boxShadow: isEnabled
                               ? [
                                   BoxShadow(
                                       color: const Color(0xFF059669)
-                                          .withValues(alpha: 0.3),
+                                          .withValues(alpha: isDark ? 0.4 : 0.3),
                                       blurRadius: 12,
                                       offset: const Offset(0, 4))
                                 ]
@@ -891,7 +977,7 @@ class _AddLahanModal extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                               color: isEnabled
                                   ? Colors.white
-                                  : const Color(0xFF94A3B8),
+                                  : AppColors.textSecondary(isDark),
                             ),
                           ),
                         ),
@@ -912,11 +998,13 @@ class _EditLahanModal extends StatelessWidget {
   final TextEditingController controller;
   final bool isEditing;
   final VoidCallback onClose, onSave;
+  final bool isDark;
   const _EditLahanModal(
       {required this.controller,
       required this.isEditing,
       required this.onClose,
-      required this.onSave});
+      required this.onSave,
+      required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -928,7 +1016,7 @@ class _EditLahanModal extends StatelessWidget {
             margin: const EdgeInsets.all(24),
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.cardBg(isDark),
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
@@ -949,18 +1037,18 @@ class _EditLahanModal extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFECFDF5),
+                              color: AppColors.primaryBg(isDark),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Icon(Icons.edit_rounded,
-                                size: 18, color: Color(0xFF059669)),
+                                size: 18, color: AppColors.primary),
                           ),
                           const SizedBox(width: 12),
-                          const Text('Edit Lahan',
+                          Text('Edit Lahan',
                               style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w800,
-                                  color: Color(0xFF1E293B))),
+                                  color: AppColors.textPrimary(isDark))),
                         ],
                       ),
                       GestureDetector(
@@ -968,41 +1056,42 @@ class _EditLahanModal extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF1F5F9),
+                            color: AppColors.cardBgLighter(isDark),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.close_rounded,
-                              size: 18, color: Color(0xFF94A3B8)),
+                          child: Icon(Icons.close_rounded,
+                              size: 18, color: AppColors.textSecondary(isDark)),
                         ),
                       ),
                     ]),
                 const SizedBox(height: 24),
-                const Text('NAMA LAHAN BARU',
+                Text('NAMA LAHAN BARU',
                     style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF64748B),
+                        color: AppColors.textMuted(isDark),
                         letterSpacing: 1.0)),
                 const SizedBox(height: 8),
                 TextField(
                   controller: controller,
                   autofocus: true,
+                  style: TextStyle(color: AppColors.textPrimary(isDark)),
                   decoration: InputDecoration(
                     hintText: 'Misal: Rumah Kaca B',
-                    hintStyle: const TextStyle(
-                        color: Color(0xFFCBD5E1), fontWeight: FontWeight.w500),
+                    hintStyle: TextStyle(
+                        color: AppColors.textHint(isDark), fontWeight: FontWeight.w500),
                     filled: true,
-                    fillColor: const Color(0xFFF8FAFC),
+                    fillColor: AppColors.cardBgDarker(isDark),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                        borderSide: BorderSide(color: AppColors.border(isDark))),
                     enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                        borderSide: BorderSide(color: AppColors.border(isDark))),
                     focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
                         borderSide: const BorderSide(
-                            color: Color(0xFF059669), width: 2)),
+                            color: AppColors.primary, width: 2)),
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 16),
                   ),
@@ -1025,13 +1114,13 @@ class _EditLahanModal extends StatelessWidget {
                                   Color(0xFF10B981)
                                 ])
                               : null,
-                          color: isEnabled ? null : const Color(0xFFE2E8F0),
+                          color: isEnabled ? null : AppColors.border(isDark),
                           borderRadius: BorderRadius.circular(14),
                           boxShadow: isEnabled
                               ? [
                                   BoxShadow(
                                       color: const Color(0xFF059669)
-                                          .withValues(alpha: 0.3),
+                                          .withValues(alpha: isDark ? 0.4 : 0.3),
                                       blurRadius: 12,
                                       offset: const Offset(0, 4))
                                 ]
@@ -1045,7 +1134,7 @@ class _EditLahanModal extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                               color: isEnabled
                                   ? Colors.white
-                                  : const Color(0xFF94A3B8),
+                                  : AppColors.textSecondary(isDark),
                             ),
                           ),
                         ),

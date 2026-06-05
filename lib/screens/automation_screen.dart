@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../models/plant_preset.dart';
 import '../widgets/toggle_switch.dart';
+import '../utils/app_colors.dart';
 
 class AutomationScreen extends StatefulWidget {
   const AutomationScreen({super.key});
@@ -65,10 +66,11 @@ class _AutomationScreenState extends State<AutomationScreen> {
     final rules = provider.rules;
     final devices = provider.devices;
     final presets = provider.presets;
+    final isDark = provider.isDarkMode;
 
     if (activeGreenhouse == null) {
       return Scaffold(
-        backgroundColor: const Color(0xFFF6F8FB),
+        backgroundColor: AppColors.background(isDark),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -76,19 +78,19 @@ class _AutomationScreenState extends State<AutomationScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFECFDF5),
+                  color: AppColors.primaryBg(isDark),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: const Icon(Icons.auto_mode_rounded,
-                    size: 48, color: Color(0xFF059669)),
+                    size: 48, color: AppColors.primary),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Belum ada lahan',
                 style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF1E293B)),
+                    color: AppColors.textPrimary(isDark)),
               ),
             ],
           ),
@@ -105,7 +107,7 @@ class _AutomationScreenState extends State<AutomationScreen> {
         '';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FB),
+      backgroundColor: AppColors.background(isDark),
       body: Stack(
         children: [
           Column(
@@ -129,12 +131,13 @@ class _AutomationScreenState extends State<AutomationScreen> {
                         isOn: _masterToggle,
                         onToggle: () =>
                             setState(() => _masterToggle = !_masterToggle),
+                        isDark: isDark,
                       ),
                       const SizedBox(height: 22),
 
                       // ── Section Title ──
-                      const _SectionTitle(
-                          title: 'Batas Aman', icon: Icons.shield_rounded),
+                      _SectionTitle(
+                          title: 'Batas Aman', icon: Icons.shield_rounded, isDark: isDark),
                       const SizedBox(height: 14),
 
                       // ── Suhu Rule Card ──
@@ -155,7 +158,7 @@ class _AutomationScreenState extends State<AutomationScreen> {
                                 Color(0xFFFF6B6B),
                                 Color(0xFFFF8E53)
                               ],
-                              bgColor: const Color(0xFFFFF5F5),
+                              bgColor: isDark ? const Color(0xFF3F1919) : const Color(0xFFFFF5F5),
                               sliderValue: suhuRule.nilaiAmbang,
                               sliderMin: 20,
                               sliderMax: 40,
@@ -166,6 +169,7 @@ class _AutomationScreenState extends State<AutomationScreen> {
                               isRuleActive: suhuRule.statusAktif,
                               onRuleToggle: () => provider.toggleRule(
                                   suhuRule.ruleId!, suhuRule.statusAktif),
+                              isDark: isDark,
                             ),
                           ),
                         ),
@@ -188,7 +192,7 @@ class _AutomationScreenState extends State<AutomationScreen> {
                                 Color(0xFF4FACFE),
                                 Color(0xFF00F2FE)
                               ],
-                              bgColor: const Color(0xFFF0F9FF),
+                              bgColor: isDark ? const Color(0xFF132F42) : const Color(0xFFF0F9FF),
                               sliderValue: lembabRule.nilaiAmbang,
                               sliderMin: 40,
                               sliderMax: 90,
@@ -198,6 +202,7 @@ class _AutomationScreenState extends State<AutomationScreen> {
                               isRuleActive: lembabRule.statusAktif,
                               onRuleToggle: () => provider.toggleRule(
                                   lembabRule.ruleId!, lembabRule.statusAktif),
+                              isDark: isDark,
                             ),
                           ),
                         ),
@@ -205,8 +210,8 @@ class _AutomationScreenState extends State<AutomationScreen> {
                       const SizedBox(height: 6),
 
                       // ── Section Title ──
-                      const _SectionTitle(
-                          title: 'Mode Tanaman', icon: Icons.eco_rounded),
+                      _SectionTitle(
+                          title: 'Mode Tanaman', icon: Icons.eco_rounded, isDark: isDark),
                       const SizedBox(height: 14),
 
                       // ── Presets Grid ──
@@ -233,9 +238,10 @@ class _AutomationScreenState extends State<AutomationScreen> {
                                 e.stopPropagation();
                                 provider.deletePreset(preset.presetId!);
                               },
+                              isDark: isDark,
                             );
                           }),
-                          _AddPresetButton(onTap: () => _openAddPreset()),
+                          _AddPresetButton(onTap: () => _openAddPreset(), isDark: isDark),
                         ],
                       ),
                       const SizedBox(height: 24),
@@ -257,6 +263,7 @@ class _AutomationScreenState extends State<AutomationScreen> {
               onKelembapanChanged: (v) => setState(() => _batasKelembaban = v),
               onCancel: _cancelEdit,
               onSave: _savePreset,
+              isDark: isDark,
             ),
         ],
       ),
@@ -345,21 +352,22 @@ class _ScreenHeader extends StatelessWidget {
 class _SectionTitle extends StatelessWidget {
   final String title;
   final IconData icon;
+  final bool isDark;
 
-  const _SectionTitle({required this.title, required this.icon});
+  const _SectionTitle({required this.title, required this.icon, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: const Color(0xFF059669)),
+        Icon(icon, size: 18, color: AppColors.primary),
         const SizedBox(width: 8),
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF1E293B),
+            color: AppColors.textPrimary(isDark),
           ),
         ),
       ],
@@ -373,8 +381,9 @@ class _SectionTitle extends StatelessWidget {
 class _MasterToggleCard extends StatelessWidget {
   final bool isOn;
   final VoidCallback onToggle;
+  final bool isDark;
 
-  const _MasterToggleCard({required this.isOn, required this.onToggle});
+  const _MasterToggleCard({required this.isOn, required this.onToggle, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -389,13 +398,13 @@ class _MasterToggleCard extends StatelessWidget {
                 colors: [Color(0xFF047857), Color(0xFF10B981)],
               )
             : null,
-        color: isOn ? null : Colors.white,
+        color: isOn ? null : AppColors.cardBg(isDark),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: isOn
-                ? const Color(0xFF059669).withValues(alpha: 0.2)
-                : Colors.black.withValues(alpha: 0.04),
+                ? const Color(0xFF059669).withValues(alpha: isDark ? 0.4 : 0.2)
+                : AppColors.shadow(isDark),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -408,13 +417,13 @@ class _MasterToggleCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: isOn
                   ? Colors.white.withValues(alpha: 0.2)
-                  : const Color(0xFFF1F5F9),
+                  : AppColors.cardBgLighter(isDark),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               isOn ? Icons.bolt_rounded : Icons.power_settings_new_rounded,
               size: 22,
-              color: isOn ? Colors.white : const Color(0xFF94A3B8),
+              color: isOn ? Colors.white : AppColors.textSecondary(isDark),
             ),
           ),
           const SizedBox(width: 16),
@@ -427,7 +436,7 @@ class _MasterToggleCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: isOn ? Colors.white : const Color(0xFF1E293B),
+                    color: isOn ? Colors.white : AppColors.textPrimary(isDark),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -437,7 +446,7 @@ class _MasterToggleCard extends StatelessWidget {
                     fontSize: 12,
                     color: isOn
                         ? Colors.white.withValues(alpha: 0.8)
-                        : const Color(0xFF94A3B8),
+                        : AppColors.textSecondary(isDark),
                   ),
                 ),
               ],
@@ -466,6 +475,7 @@ class _RuleCard extends StatelessWidget {
   final String actionLabel;
   final bool isRuleActive;
   final VoidCallback onRuleToggle;
+  final bool isDark;
 
   const _RuleCard({
     required this.icon,
@@ -483,6 +493,7 @@ class _RuleCard extends StatelessWidget {
     required this.actionLabel,
     required this.isRuleActive,
     required this.onRuleToggle,
+    required this.isDark,
   });
 
   @override
@@ -494,11 +505,11 @@ class _RuleCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.cardBg(isDark),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: gradientColors[0].withValues(alpha: 0.08),
+            color: isDark ? Colors.black.withValues(alpha: 0.2) : gradientColors[0].withValues(alpha: 0.08),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -524,18 +535,18 @@ class _RuleCard extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF1E293B),
+                        color: AppColors.textPrimary(isDark),
                       ),
                     ),
                     const SizedBox(height: 1),
                     Text(
                       condition,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: Color(0xFF94A3B8),
+                        color: AppColors.textSecondary(isDark),
                       ),
                     ),
                   ],
@@ -618,15 +629,15 @@ class _RuleCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(sliderMinLabel,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFFCBD5E1))),
+                            color: AppColors.textHint(isDark))),
                     Text(sliderMaxLabel,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFFCBD5E1))),
+                            color: AppColors.textHint(isDark))),
                   ],
                 ),
               ],
@@ -635,7 +646,7 @@ class _RuleCard extends StatelessWidget {
           const SizedBox(height: 12),
 
           // Divider
-          Container(height: 1, color: const Color(0xFFF1F5F9)),
+          Container(height: 1, color: AppColors.divider(isDark)),
           const SizedBox(height: 12),
 
           // Action toggle
@@ -650,16 +661,16 @@ class _RuleCard extends StatelessWidget {
                         : Icons.circle_outlined,
                     size: 16,
                     color: isRuleActive
-                        ? const Color(0xFF059669)
-                        : const Color(0xFFCBD5E1),
+                        ? AppColors.primary
+                        : AppColors.textHint(isDark),
                   ),
                   const SizedBox(width: 8),
                   Text(
                     actionLabel,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF475569),
+                      color: AppColors.textMuted(isDark),
                     ),
                   ),
                 ],
@@ -692,13 +703,15 @@ class _PresetCard extends StatelessWidget {
   final VoidCallback onTap;
   final void Function(_TapEvent) onEdit;
   final void Function(_TapEvent) onDelete;
+  final bool isDark;
 
   const _PresetCard(
       {required this.preset,
       required this.isActive,
       required this.onTap,
       required this.onEdit,
-      required this.onDelete});
+      required this.onDelete,
+      required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -708,22 +721,22 @@ class _PresetCard extends StatelessWidget {
         duration: const Duration(milliseconds: 250),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.cardBg(isDark),
           border: Border.all(
-            color: isActive ? const Color(0xFF34D399) : const Color(0xFFE2E8F0),
+            color: isActive ? AppColors.primaryLight : AppColors.border(isDark),
             width: isActive ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             if (isActive)
               BoxShadow(
-                color: const Color(0xFF059669).withValues(alpha: 0.1),
+                color: AppColors.primary.withValues(alpha: isDark ? 0.3 : 0.1),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               )
             else
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
+                color: AppColors.shadow(isDark),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -747,13 +760,13 @@ class _PresetCard extends StatelessWidget {
                             colors: [Color(0xFF047857), Color(0xFF10B981)],
                           )
                         : null,
-                    color: isActive ? null : const Color(0xFFF1F5F9),
+                    color: isActive ? null : AppColors.cardBgLighter(isDark),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(
                     Icons.eco_rounded,
                     size: 22,
-                    color: isActive ? Colors.white : const Color(0xFFCBD5E1),
+                    color: isActive ? Colors.white : AppColors.textHint(isDark),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -766,8 +779,8 @@ class _PresetCard extends StatelessWidget {
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: isActive
-                        ? const Color(0xFF1E293B)
-                        : const Color(0xFF94A3B8),
+                        ? AppColors.textPrimary(isDark)
+                        : AppColors.textSecondary(isDark),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -777,15 +790,15 @@ class _PresetCard extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFECFDF5),
+                      color: AppColors.primaryBg(isDark),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Aktif',
                       style: TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF059669)),
+                          color: isDark ? AppColors.primaryLight : AppColors.primary),
                     ),
                   ),
               ],
@@ -800,12 +813,14 @@ class _PresetCard extends StatelessWidget {
                     _MiniIconButton(
                       icon: Icons.edit_rounded,
                       onTap: () => onEdit(_TapEvent()),
+                      isDark: isDark,
                     ),
                     const SizedBox(width: 4),
                     _MiniIconButton(
                       icon: Icons.delete_rounded,
                       color: const Color(0xFFEF4444),
                       onTap: () => onDelete(_TapEvent()),
+                      isDark: isDark,
                     ),
                   ],
                 ),
@@ -822,13 +837,15 @@ class _PresetCard extends StatelessWidget {
 // ═══════════════════════════════════════════════════
 class _MiniIconButton extends StatelessWidget {
   final IconData icon;
-  final Color color;
+  final Color? color;
   final VoidCallback onTap;
+  final bool isDark;
 
   const _MiniIconButton({
     required this.icon,
-    this.color = const Color(0xFF94A3B8),
+    this.color,
     required this.onTap,
+    required this.isDark,
   });
 
   @override
@@ -838,17 +855,17 @@ class _MiniIconButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(5),
         decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          color: AppColors.cardBg(isDark),
+          border: Border.all(color: AppColors.border(isDark)),
           borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: AppColors.shadow(isDark),
               blurRadius: 4,
             ),
           ],
         ),
-        child: Icon(icon, size: 12, color: color),
+        child: Icon(icon, size: 12, color: color ?? AppColors.textSecondary(isDark)),
       ),
     );
   }
@@ -859,7 +876,8 @@ class _MiniIconButton extends StatelessWidget {
 // ═══════════════════════════════════════════════════
 class _AddPresetButton extends StatelessWidget {
   final VoidCallback onTap;
-  const _AddPresetButton({required this.onTap});
+  final bool isDark;
+  const _AddPresetButton({required this.onTap, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -867,8 +885,8 @@ class _AddPresetButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+          color: AppColors.cardBg(isDark),
+          border: Border.all(color: AppColors.border(isDark), width: 1.5),
           borderRadius: BorderRadius.circular(18),
         ),
         child: Column(
@@ -877,19 +895,19 @@ class _AddPresetButton extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
+                color: AppColors.cardBgLighter(isDark),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.add_rounded,
-                  size: 24, color: Color(0xFF94A3B8)),
+              child: Icon(Icons.add_rounded,
+                  size: 24, color: AppColors.textSecondary(isDark)),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Tambah Preset',
               style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF94A3B8)),
+                  color: AppColors.textSecondary(isDark)),
             ),
           ],
         ),
@@ -907,6 +925,7 @@ class _PresetModal extends StatefulWidget {
   final bool isEditing;
   final ValueChanged<double> onSuhuChanged, onKelembapanChanged;
   final VoidCallback onCancel, onSave;
+  final bool isDark;
 
   const _PresetModal({
     required this.namaController,
@@ -917,6 +936,7 @@ class _PresetModal extends StatefulWidget {
     required this.onKelembapanChanged,
     required this.onCancel,
     required this.onSave,
+    required this.isDark,
   });
 
   @override
@@ -947,25 +967,25 @@ class _PresetModalState extends State<_PresetModal> {
   InputDecoration _inputDecoration(String hint, String suffix) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: Color(0xFFCBD5E1)),
+      hintStyle: TextStyle(color: AppColors.textHint(widget.isDark)),
       filled: true,
-      fillColor: const Color(0xFFF8FAFC),
+      fillColor: AppColors.cardBgDarker(widget.isDark),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        borderSide: BorderSide(color: AppColors.border(widget.isDark)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        borderSide: BorderSide(color: AppColors.border(widget.isDark)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFF059669), width: 2),
+        borderSide: const BorderSide(color: AppColors.primary, width: 2),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       suffixText: suffix,
-      suffixStyle: const TextStyle(
-          color: Color(0xFF94A3B8), fontWeight: FontWeight.w600),
+      suffixStyle: TextStyle(
+          color: AppColors.textSecondary(widget.isDark), fontWeight: FontWeight.w600),
     );
   }
 
@@ -983,7 +1003,7 @@ class _PresetModalState extends State<_PresetModal> {
                 margin: const EdgeInsets.all(24),
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.cardBg(widget.isDark),
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
@@ -1006,7 +1026,7 @@ class _PresetModalState extends State<_PresetModal> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFECFDF5),
+                                color: AppColors.primaryBg(widget.isDark),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Icon(
@@ -1014,7 +1034,7 @@ class _PresetModalState extends State<_PresetModal> {
                                     ? Icons.edit_rounded
                                     : Icons.add_rounded,
                                 size: 18,
-                                color: const Color(0xFF059669),
+                                color: AppColors.primary,
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -1022,10 +1042,10 @@ class _PresetModalState extends State<_PresetModal> {
                               widget.isEditing
                                   ? 'Edit Preset'
                                   : 'Tambah Preset',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 17,
                                   fontWeight: FontWeight.w700,
-                                  color: Color(0xFF1E293B)),
+                                  color: AppColors.textPrimary(widget.isDark)),
                             ),
                           ],
                         ),
@@ -1034,11 +1054,11 @@ class _PresetModalState extends State<_PresetModal> {
                           child: Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF1F5F9),
+                              color: AppColors.cardBgLighter(widget.isDark),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(Icons.close_rounded,
-                                size: 18, color: Color(0xFF94A3B8)),
+                            child: Icon(Icons.close_rounded,
+                                size: 18, color: AppColors.textSecondary(widget.isDark)),
                           ),
                         ),
                       ],
@@ -1046,18 +1066,19 @@ class _PresetModalState extends State<_PresetModal> {
                     const SizedBox(height: 24),
 
                     // Name field
-                    const Text(
+                    Text(
                       'NAMA TANAMAN',
                       style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF64748B),
+                          color: AppColors.textMuted(widget.isDark),
                           letterSpacing: 0.8),
                     ),
                     const SizedBox(height: 8),
                     TextField(
                       controller: widget.namaController,
                       autofocus: true,
+                      style: TextStyle(color: AppColors.textPrimary(widget.isDark)),
                       decoration: _inputDecoration('Misal: Tomat', ''),
                     ),
                     const SizedBox(height: 18),
@@ -1069,12 +1090,12 @@ class _PresetModalState extends State<_PresetModal> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'BATAS SUHU',
                                 style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFF64748B),
+                                    color: AppColors.textMuted(widget.isDark),
                                     letterSpacing: 0.8),
                               ),
                               const SizedBox(height: 8),
@@ -1083,6 +1104,7 @@ class _PresetModalState extends State<_PresetModal> {
                                     const TextInputType.numberWithOptions(
                                         decimal: true),
                                 controller: _suhuController,
+                                style: TextStyle(color: AppColors.textPrimary(widget.isDark)),
                                 onChanged: (v) {
                                   final d = double.tryParse(v);
                                   if (d != null) {
@@ -1100,12 +1122,12 @@ class _PresetModalState extends State<_PresetModal> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'BATAS LEMBAP',
                                 style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFF64748B),
+                                    color: AppColors.textMuted(widget.isDark),
                                     letterSpacing: 0.8),
                               ),
                               const SizedBox(height: 8),
@@ -1114,6 +1136,7 @@ class _PresetModalState extends State<_PresetModal> {
                                     const TextInputType.numberWithOptions(
                                         decimal: true),
                                 controller: _lembabController,
+                                style: TextStyle(color: AppColors.textPrimary(widget.isDark)),
                                 onChanged: (v) {
                                   final d = double.tryParse(v);
                                   if (d != null) {
@@ -1150,13 +1173,13 @@ class _PresetModalState extends State<_PresetModal> {
                                       ],
                                     )
                                   : null,
-                              color: isEnabled ? null : const Color(0xFFE2E8F0),
+                              color: isEnabled ? null : AppColors.border(widget.isDark),
                               borderRadius: BorderRadius.circular(14),
                               boxShadow: isEnabled
                                   ? [
                                       BoxShadow(
                                         color: const Color(0xFF059669)
-                                            .withValues(alpha: 0.3),
+                                            .withValues(alpha: widget.isDark ? 0.4 : 0.3),
                                         blurRadius: 12,
                                         offset: const Offset(0, 4),
                                       ),
@@ -1173,7 +1196,7 @@ class _PresetModalState extends State<_PresetModal> {
                                   fontWeight: FontWeight.w700,
                                   color: isEnabled
                                       ? Colors.white
-                                      : const Color(0xFF94A3B8),
+                                      : AppColors.textSecondary(widget.isDark),
                                 ),
                               ),
                             ),

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'dart:math' as math;
+import '../providers/app_provider.dart';
+import '../utils/app_colors.dart';
 
 class GaugeWidget extends StatefulWidget {
   final double value;
@@ -61,17 +64,19 @@ class _GaugeWidgetState extends State<GaugeWidget>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.watch<AppProvider>().isDarkMode;
+
     return Expanded(
       child: AspectRatio(
         aspectRatio: 4 / 5,
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.cardBg(isDark),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFF1F5F9)),
+            border: Border.all(color: AppColors.border(isDark)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
+                color: AppColors.shadow(isDark),
                 blurRadius: 30,
                 offset: const Offset(0, 8),
               ),
@@ -94,16 +99,16 @@ class _GaugeWidgetState extends State<GaugeWidget>
                             value: _animation.value,
                             max: widget.max,
                             color: widget.color,
-                            trackColor: widget.trackColor,
+                            trackColor: isDark ? AppColors.border(isDark) : widget.trackColor,
                           ),
                         ),
                       ),
                       Text(
                         '${_animation.value.round()}${widget.label == 'Suhu Udara' ? '°c' : '%'}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF1E293B),
+                          color: AppColors.textPrimary(isDark),
                           letterSpacing: -1,
                         ),
                       ),
@@ -118,7 +123,7 @@ class _GaugeWidgetState extends State<GaugeWidget>
                   Icon(widget.icon, size: 14, color: widget.color),
                   const SizedBox(width: 4),
                   Text(
-                    widget.label,
+                     widget.label,
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -182,5 +187,5 @@ class _GaugePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_GaugePainter oldDelegate) =>
-      oldDelegate.value != value || oldDelegate.color != color;
+      oldDelegate.value != value || oldDelegate.color != color || oldDelegate.trackColor != trackColor;
 }

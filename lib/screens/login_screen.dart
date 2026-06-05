@@ -10,6 +10,7 @@ import '../models/device.dart';
 import '../models/automation_rule.dart';
 import '../models/sensor_log.dart';
 import '../models/activity_log.dart';
+import '../utils/app_colors.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -301,8 +302,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<AppProvider>();
+    final isDark = provider.isDarkMode;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FB),
+      backgroundColor: AppColors.background(isDark),
       body: Stack(
         children: [
           // Gradient Header
@@ -388,11 +392,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppColors.cardBg(isDark),
                         borderRadius: BorderRadius.circular(28),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
+                            color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.black.withValues(alpha: 0.08),
                             blurRadius: 30,
                             offset: const Offset(0, 10),
                           ),
@@ -404,7 +408,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Container(
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF1F5F9),
+                              color: AppColors.cardBgDarker(isDark),
                               borderRadius: BorderRadius.circular(14),
                             ),
                             child: Row(
@@ -416,6 +420,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     _tab = 'masuk';
                                     _error = '';
                                   }),
+                                  isDark: isDark,
                                 ),
                                 _TabButton(
                                   label: 'Daftar',
@@ -424,6 +429,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     _tab = 'daftar';
                                     _error = '';
                                   }),
+                                  isDark: isDark,
                                 ),
                               ],
                             ),
@@ -434,25 +440,30 @@ class _LoginScreenState extends State<LoginScreen> {
                           if (_tab == 'daftar') ...[
                             _FormField(
                                 label: 'Nama Lengkap',
+                                isDark: isDark,
                                 child: _TextField(
                                   controller: _namaController,
                                   placeholder: 'Misal: Budi Santoso',
                                   keyboardType: TextInputType.name,
                                   icon: Icons.person_outline_rounded,
+                                  isDark: isDark,
                                 )),
                             const SizedBox(height: 16),
                           ],
                           _FormField(
                               label: 'Alamat E-mail',
+                              isDark: isDark,
                               child: _TextField(
                                 controller: _emailController,
                                 placeholder: 'hello@example.com',
                                 keyboardType: TextInputType.emailAddress,
                                 icon: Icons.email_outlined,
+                                isDark: isDark,
                               )),
                           const SizedBox(height: 16),
                           _FormField(
                             label: 'Kata Sandi',
+                            isDark: isDark,
                             trailing: _tab == 'masuk'
                                 ? GestureDetector(
                                     onTap: () {},
@@ -461,7 +472,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w700,
-                                        color: Color(0xFF059669),
+                                        color: AppColors.primary,
                                       ),
                                     ),
                                   )
@@ -471,6 +482,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               showPassword: _showPassword,
                               onToggle: () => setState(
                                   () => _showPassword = !_showPassword),
+                              isDark: isDark,
                             ),
                           ),
                           if (_error.isNotEmpty) ...[
@@ -479,10 +491,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 10),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFEF2F2),
+                                color: const Color(0xFFFEF2F2).withValues(alpha: isDark ? 0.1 : 1.0),
                                 borderRadius: BorderRadius.circular(10),
                                 border:
-                                    Border.all(color: const Color(0xFFFECACA)),
+                                    Border.all(color: const Color(0xFFFECACA).withValues(alpha: isDark ? 0.2 : 1.0)),
                               ),
                               child: Row(
                                 children: [
@@ -517,8 +529,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           // Divider
                           Row(
                             children: [
-                              const Expanded(
-                                  child: Divider(color: Color(0xFFF1F5F9))),
+                              Expanded(
+                                  child: Divider(color: AppColors.divider(isDark))),
                               Padding(
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 16),
@@ -526,14 +538,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                   'ATAU',
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: const Color(0xFF94A3B8),
+                                    color: AppColors.textHint(isDark),
                                     fontWeight: FontWeight.w700,
                                     letterSpacing: 1.0,
                                   ),
                                 ),
                               ),
-                              const Expanded(
-                                  child: Divider(color: Color(0xFFF1F5F9))),
+                              Expanded(
+                                  child: Divider(color: AppColors.divider(isDark))),
                             ],
                           ),
                           const SizedBox(height: 20),
@@ -542,6 +554,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           _GoogleSignInButton(
                             loading: _googleLoading,
                             onPressed: _handleGoogleSignIn,
+                            isDark: isDark,
                           ),
                         ],
                       ),
@@ -564,9 +577,10 @@ class _TabButton extends StatelessWidget {
   final String label;
   final bool isActive;
   final VoidCallback onTap;
+  final bool isDark;
 
   const _TabButton(
-      {required this.label, required this.isActive, required this.onTap});
+      {required this.label, required this.isActive, required this.onTap, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -577,12 +591,12 @@ class _TabButton extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: isActive ? Colors.white : Colors.transparent,
+            color: isActive ? AppColors.cardBg(isDark) : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
             boxShadow: isActive
                 ? [
                     BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
+                        color: AppColors.shadow(isDark),
                         blurRadius: 8,
                         offset: const Offset(0, 2))
                   ]
@@ -595,7 +609,7 @@ class _TabButton extends StatelessWidget {
               fontSize: 14,
               fontWeight: FontWeight.w700,
               color:
-                  isActive ? const Color(0xFF059669) : const Color(0xFF94A3B8),
+                  isActive ? (isDark ? AppColors.primaryLight : AppColors.primary) : AppColors.textSecondary(isDark),
             ),
           ),
         ),
@@ -608,8 +622,9 @@ class _FormField extends StatelessWidget {
   final String label;
   final Widget child;
   final Widget? trailing;
+  final bool isDark;
 
-  const _FormField({required this.label, required this.child, this.trailing});
+  const _FormField({required this.label, required this.child, this.trailing, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -621,10 +636,10 @@ class _FormField extends StatelessWidget {
           children: [
             Text(
               label.toUpperCase(),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF64748B),
+                color: AppColors.textMuted(isDark),
                 letterSpacing: 1.0,
               ),
             ),
@@ -643,12 +658,14 @@ class _TextField extends StatelessWidget {
   final String placeholder;
   final TextInputType keyboardType;
   final IconData icon;
+  final bool isDark;
 
   const _TextField({
     required this.controller,
     required this.placeholder,
     this.keyboardType = TextInputType.text,
     required this.icon,
+    required this.isDark,
   });
 
   @override
@@ -656,34 +673,34 @@ class _TextField extends StatelessWidget {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w600,
-        color: Color(0xFF1E293B),
+        color: AppColors.textPrimary(isDark),
       ),
       decoration: InputDecoration(
         hintText: placeholder,
-        hintStyle: const TextStyle(
-          color: Color(0xFF94A3B8),
+        hintStyle: TextStyle(
+          color: AppColors.textHint(isDark),
           fontWeight: FontWeight.w500,
         ),
         filled: true,
-        fillColor: const Color(0xFFF8FAFC),
+        fillColor: AppColors.cardBgLighter(isDark),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          borderSide: BorderSide(color: AppColors.border(isDark)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          borderSide: BorderSide(color: AppColors.border(isDark)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFF059669), width: 2.0),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2.0),
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        prefixIcon: Icon(icon, color: const Color(0xFF94A3B8), size: 20),
+        prefixIcon: Icon(icon, color: AppColors.textHint(isDark), size: 20),
       ),
     );
   }
@@ -693,11 +710,13 @@ class _PasswordField extends StatelessWidget {
   final TextEditingController controller;
   final bool showPassword;
   final VoidCallback onToggle;
+  final bool isDark;
 
   const _PasswordField({
     required this.controller,
     required this.showPassword,
     required this.onToggle,
+    required this.isDark,
   });
 
   @override
@@ -705,39 +724,39 @@ class _PasswordField extends StatelessWidget {
     return TextField(
       controller: controller,
       obscureText: !showPassword,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w600,
-        color: Color(0xFF1E293B),
+        color: AppColors.textPrimary(isDark),
       ),
       decoration: InputDecoration(
         hintText: '••••••••',
-        hintStyle: const TextStyle(
-            color: Color(0xFF94A3B8), fontWeight: FontWeight.w500),
+        hintStyle: TextStyle(
+            color: AppColors.textHint(isDark), fontWeight: FontWeight.w500),
         filled: true,
-        fillColor: const Color(0xFFF8FAFC),
+        fillColor: AppColors.cardBgLighter(isDark),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          borderSide: BorderSide(color: AppColors.border(isDark)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          borderSide: BorderSide(color: AppColors.border(isDark)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFF059669), width: 2.0),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2.0),
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        prefixIcon: const Icon(Icons.lock_outline_rounded,
-            color: Color(0xFF94A3B8), size: 20),
+        prefixIcon: Icon(Icons.lock_outline_rounded,
+            color: AppColors.textHint(isDark), size: 20),
         suffixIcon: IconButton(
           icon: Icon(
             showPassword
                 ? Icons.visibility_rounded
                 : Icons.visibility_off_rounded,
-            color: const Color(0xFF94A3B8),
+            color: AppColors.textHint(isDark),
             size: 20,
           ),
           onPressed: onToggle,
@@ -808,8 +827,9 @@ class _SubmitButton extends StatelessWidget {
 class _GoogleSignInButton extends StatelessWidget {
   final bool loading;
   final VoidCallback onPressed;
+  final bool isDark;
 
-  const _GoogleSignInButton({required this.loading, required this.onPressed});
+  const _GoogleSignInButton({required this.loading, required this.onPressed, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -819,12 +839,12 @@ class _GoogleSignInButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.cardBg(isDark),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+          border: Border.all(color: AppColors.border(isDark), width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
+              color: AppColors.shadow(isDark),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -836,19 +856,19 @@ class _GoogleSignInButton extends StatelessWidget {
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2.5, color: Color(0xFF059669)),
+                      strokeWidth: 2.5, color: AppColors.primary),
                 )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _GoogleLogo(),
                     const SizedBox(width: 12),
-                    const Text(
+                    Text(
                       'Lanjutkan dengan Google',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF1E293B),
+                        color: AppColors.textPrimary(isDark),
                       ),
                     ),
                   ],

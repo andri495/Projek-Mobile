@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/app_provider.dart';
+import '../utils/app_colors.dart';
 
 class ToggleSwitch extends StatelessWidget {
   final bool checked;
@@ -12,6 +15,8 @@ class ToggleSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.watch<AppProvider>().isDarkMode;
+
     return GestureDetector(
       onTap: () {
         // Haptic feedback could be added here if needed
@@ -31,7 +36,7 @@ class ToggleSwitch extends StatelessWidget {
                   end: Alignment.centerRight,
                 )
               : null,
-          color: checked ? null : const Color(0xFFE2E8F0),
+          color: checked ? null : AppColors.border(isDark),
           boxShadow: checked
               ? [
                   BoxShadow(
@@ -42,7 +47,7 @@ class ToggleSwitch extends StatelessWidget {
                 ]
               : [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 1),
                   )
@@ -58,7 +63,7 @@ class ToggleSwitch extends StatelessWidget {
             height: 22,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white,
+              color: isDark ? (checked ? Colors.white : AppColors.textSecondary(isDark)) : Colors.white,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.15),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
+import '../utils/app_colors.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -12,6 +13,7 @@ class DashboardScreen extends StatelessWidget {
     final activeGreenhouse = provider.activeGreenhouse;
     final sensorData = provider.latestSensorLog;
     final devices = provider.devices;
+    final isDark = provider.isDarkMode;
 
     if (user == null || activeGreenhouse == null) {
       return const _NoGreenhouseView();
@@ -29,7 +31,7 @@ class DashboardScreen extends StatelessWidget {
         suhu <= 35 && suhu >= 15 && kelembaban >= 40 && kelembaban <= 90;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FB),
+      backgroundColor: AppColors.background(isDark),
       body: Column(
         children: [
           // ── Gradient Header ──
@@ -45,7 +47,7 @@ class DashboardScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // ── Connection Status ──
-                    _ConnectionBadge(),
+                    _ConnectionBadge(isDark: isDark),
                     const SizedBox(height: 20),
 
                     // ── Sensor Cards Row ──
@@ -61,8 +63,9 @@ class DashboardScreen extends StatelessWidget {
                               Color(0xFFFF6B6B),
                               Color(0xFFFF8E53)
                             ],
-                            bgColor: const Color(0xFFFFF5F5),
+                            bgColor: isDark ? const Color(0xFF3F1919) : const Color(0xFFFFF5F5),
                             max: 50,
+                            isDark: isDark,
                           ),
                         ),
                         const SizedBox(width: 14),
@@ -76,8 +79,9 @@ class DashboardScreen extends StatelessWidget {
                               Color(0xFF4FACFE),
                               Color(0xFF00F2FE)
                             ],
-                            bgColor: const Color(0xFFF0F9FF),
+                            bgColor: isDark ? const Color(0xFF132F42) : const Color(0xFFF0F9FF),
                             max: 100,
+                            isDark: isDark,
                           ),
                         ),
                       ],
@@ -85,16 +89,16 @@ class DashboardScreen extends StatelessWidget {
                     const SizedBox(height: 18),
 
                     // ── Status Card ──
-                    _StatusCard(isNormal: isNormal),
+                    _StatusCard(isNormal: isNormal, isDark: isDark),
                     const SizedBox(height: 22),
 
                     // ── Quick Actions ──
-                    const Text(
+                    Text(
                       'Aksi Cepat',
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF1E293B),
+                        color: AppColors.textPrimary(isDark),
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -115,6 +119,7 @@ class DashboardScreen extends StatelessWidget {
                             onTap: kipas != null
                                 ? () => provider.toggleDevice(kipas)
                                 : null,
+                            isDark: isDark,
                           ),
                         ),
                         const SizedBox(width: 14),
@@ -133,6 +138,7 @@ class DashboardScreen extends StatelessWidget {
                             onTap: embun != null
                                 ? () => provider.toggleDevice(embun)
                                 : null,
+                            isDark: isDark,
                           ),
                         ),
                       ],
@@ -287,6 +293,9 @@ class _GradientHeader extends StatelessWidget {
 // Connection Badge
 // ═══════════════════════════════════════════════════
 class _ConnectionBadge extends StatefulWidget {
+  final bool isDark;
+  const _ConnectionBadge({required this.isDark});
+
   @override
   State<_ConnectionBadge> createState() => _ConnectionBadgeState();
 }
@@ -318,11 +327,11 @@ class _ConnectionBadgeState extends State<_ConnectionBadge>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.cardBg(widget.isDark),
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: AppColors.shadow(widget.isDark),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -366,15 +375,15 @@ class _ConnectionBadgeState extends State<_ConnectionBadge>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: const Color(0xFFECFDF5),
+              color: AppColors.primaryBg(widget.isDark),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Text(
+            child: Text(
               'Online',
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF059669),
+                color: widget.isDark ? AppColors.primaryLight : AppColors.primary,
               ),
             ),
           ),
@@ -385,7 +394,7 @@ class _ConnectionBadgeState extends State<_ConnectionBadge>
 }
 
 // ═══════════════════════════════════════════════════
-// Sensor Card (replaces heavy gauge)
+// Sensor Card
 // ═══════════════════════════════════════════════════
 class _SensorCard extends StatelessWidget {
   final double value;
@@ -395,6 +404,7 @@ class _SensorCard extends StatelessWidget {
   final List<Color> gradientColors;
   final Color bgColor;
   final double max;
+  final bool isDark;
 
   const _SensorCard({
     required this.value,
@@ -404,6 +414,7 @@ class _SensorCard extends StatelessWidget {
     required this.gradientColors,
     required this.bgColor,
     required this.max,
+    required this.isDark,
   });
 
   @override
@@ -413,11 +424,11 @@ class _SensorCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.cardBg(isDark),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: gradientColors[0].withValues(alpha: 0.08),
+            color: isDark ? Colors.black.withValues(alpha: 0.2) : gradientColors[0].withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, 6),
           ),
@@ -446,10 +457,10 @@ class _SensorCard extends StatelessWidget {
                 curve: Curves.easeOutCubic,
                 builder: (_, animValue, __) => Text(
                   '${animValue.round()}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF1E293B),
+                    color: AppColors.textPrimary(isDark),
                     height: 1,
                     letterSpacing: -1.5,
                   ),
@@ -472,10 +483,10 @@ class _SensorCard extends StatelessWidget {
           // Label
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF94A3B8),
+              color: AppColors.textSecondary(isDark),
             ),
           ),
           const SizedBox(height: 12),
@@ -518,8 +529,9 @@ class _SensorCard extends StatelessWidget {
 // ═══════════════════════════════════════════════════
 class _StatusCard extends StatelessWidget {
   final bool isNormal;
+  final bool isDark;
 
-  const _StatusCard({required this.isNormal});
+  const _StatusCard({required this.isNormal, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -548,7 +560,7 @@ class _StatusCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: bgColor.withValues(alpha: 0.3),
+            color: isDark ? Colors.black.withValues(alpha: 0.3) : bgColor.withValues(alpha: 0.3),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -607,6 +619,7 @@ class _QuickActionCard extends StatelessWidget {
   final bool isOn;
   final List<Color> activeGradient;
   final VoidCallback? onTap;
+  final bool isDark;
 
   const _QuickActionCard({
     required this.title,
@@ -615,6 +628,7 @@ class _QuickActionCard extends StatelessWidget {
     required this.isOn,
     required this.activeGradient,
     this.onTap,
+    required this.isDark,
   });
 
   @override
@@ -626,24 +640,24 @@ class _QuickActionCard extends StatelessWidget {
         curve: Curves.easeOut,
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.cardBg(isDark),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isOn
                 ? activeGradient[0].withValues(alpha: 0.3)
-                : const Color(0xFFE2E8F0),
+                : AppColors.border(isDark),
             width: 1.5,
           ),
           boxShadow: [
             if (isOn)
               BoxShadow(
-                color: activeGradient[0].withValues(alpha: 0.12),
+                color: activeGradient[0].withValues(alpha: isDark ? 0.2 : 0.12),
                 blurRadius: 16,
                 offset: const Offset(0, 4),
               )
             else
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
+                color: AppColors.shadow(isDark),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -663,13 +677,13 @@ class _QuickActionCard extends StatelessWidget {
                         colors: activeGradient,
                       )
                     : null,
-                color: isOn ? null : const Color(0xFFF1F5F9),
+                color: isOn ? null : AppColors.cardBgLighter(isDark),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(
                 icon,
                 size: 26,
-                color: isOn ? Colors.white : const Color(0xFF94A3B8),
+                color: isOn ? Colors.white : AppColors.textSecondary(isDark),
               ),
             ),
             const SizedBox(height: 14),
@@ -678,7 +692,7 @@ class _QuickActionCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: isOn ? activeGradient[0] : const Color(0xFF475569),
+                color: isOn ? activeGradient[0] : AppColors.textPrimary(isDark),
               ),
             ),
             const SizedBox(height: 4),
@@ -689,7 +703,7 @@ class _QuickActionCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isOn
                     ? activeGradient[0].withValues(alpha: 0.1)
-                    : const Color(0xFFF8FAFC),
+                    : AppColors.cardBgDarker(isDark),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -697,7 +711,7 @@ class _QuickActionCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
-                  color: isOn ? activeGradient[0] : const Color(0xFF94A3B8),
+                  color: isOn ? activeGradient[0] : AppColors.textSecondary(isDark),
                 ),
               ),
             ),
@@ -716,8 +730,9 @@ class _NoGreenhouseView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.watch<AppProvider>().isDarkMode;
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FB),
+      backgroundColor: AppColors.background(isDark),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -727,27 +742,27 @@ class _NoGreenhouseView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFECFDF5),
+                  color: AppColors.primaryBg(isDark),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: const Icon(Icons.eco_rounded,
-                    size: 48, color: Color(0xFF059669)),
+                    size: 48, color: AppColors.primary),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Belum ada lahan',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF1E293B),
+                  color: AppColors.textPrimary(isDark),
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Akun Anda tidak memiliki lahan aktif.\nSilahkan buat akun baru atau masuk\ndengan akun default.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Color(0xFF64748B),
+                  color: AppColors.textMuted(isDark),
                   fontSize: 14,
                   height: 1.6,
                 ),

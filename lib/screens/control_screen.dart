@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../models/device.dart';
 import '../widgets/toggle_switch.dart';
+import '../utils/app_colors.dart';
 
 class ControlScreen extends StatefulWidget {
   const ControlScreen({super.key});
@@ -53,10 +54,11 @@ class _ControlScreenState extends State<ControlScreen> {
     final provider = context.watch<AppProvider>();
     final activeGreenhouse = provider.activeGreenhouse;
     final devices = provider.devices;
+    final isDark = provider.isDarkMode;
 
     if (activeGreenhouse == null) {
       return Scaffold(
-        backgroundColor: const Color(0xFFF6F8FB),
+        backgroundColor: AppColors.background(isDark),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -64,19 +66,19 @@ class _ControlScreenState extends State<ControlScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFECFDF5),
+                  color: AppColors.primaryBg(isDark),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: const Icon(Icons.sensors_off_rounded,
-                    size: 48, color: Color(0xFF059669)),
+                    size: 48, color: AppColors.primary),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Belum ada lahan',
                 style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF1E293B)),
+                    color: AppColors.textPrimary(isDark)),
               ),
             ],
           ),
@@ -85,7 +87,7 @@ class _ControlScreenState extends State<ControlScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FB),
+      backgroundColor: AppColors.background(isDark),
       body: Stack(
         children: [
           Column(
@@ -105,7 +107,7 @@ class _ControlScreenState extends State<ControlScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Device summary
-                      _DeviceSummaryBar(devices: devices),
+                      _DeviceSummaryBar(devices: devices, isDark: isDark),
                       const SizedBox(height: 20),
                       // Device list
                       ...devices.map((device) => _DeviceCard(
@@ -122,6 +124,7 @@ class _ControlScreenState extends State<ControlScreen> {
                                 '${device.namaAlat} sedang di$newStatus...',
                               );
                             },
+                            isDark: isDark,
                           )),
                     ],
                   ),
@@ -224,8 +227,9 @@ class _ScreenHeader extends StatelessWidget {
 // ═══════════════════════════════════════════════════
 class _DeviceSummaryBar extends StatelessWidget {
   final List<Device> devices;
+  final bool isDark;
 
-  const _DeviceSummaryBar({required this.devices});
+  const _DeviceSummaryBar({required this.devices, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -235,11 +239,11 @@ class _DeviceSummaryBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.cardBg(isDark),
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: AppColors.shadow(isDark),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -251,25 +255,25 @@ class _DeviceSummaryBar extends StatelessWidget {
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: onCount > 0
-                  ? const Color(0xFFECFDF5)
-                  : const Color(0xFFF1F5F9),
+                  ? AppColors.primaryBg(isDark)
+                  : AppColors.cardBgLighter(isDark),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               Icons.devices_rounded,
               size: 18,
               color: onCount > 0
-                  ? const Color(0xFF059669)
-                  : const Color(0xFF94A3B8),
+                  ? AppColors.primary
+                  : AppColors.textSecondary(isDark),
             ),
           ),
           const SizedBox(width: 12),
           Text(
             '$onCount dari $totalCount alat aktif',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF475569),
+              color: AppColors.textPrimary(isDark),
             ),
           ),
           const Spacer(),
@@ -277,8 +281,8 @@ class _DeviceSummaryBar extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: onCount > 0
-                  ? const Color(0xFFECFDF5)
-                  : const Color(0xFFF1F5F9),
+                  ? AppColors.primaryBg(isDark)
+                  : AppColors.cardBgLighter(isDark),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
@@ -287,8 +291,8 @@ class _DeviceSummaryBar extends StatelessWidget {
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
                 color: onCount > 0
-                    ? const Color(0xFF059669)
-                    : const Color(0xFF94A3B8),
+                    ? (isDark ? AppColors.primaryLight : AppColors.primary)
+                    : AppColors.textSecondary(isDark),
               ),
             ),
           ),
@@ -306,12 +310,14 @@ class _DeviceCard extends StatelessWidget {
   final IconData icon;
   final List<Color> gradient;
   final VoidCallback onToggle;
+  final bool isDark;
 
   const _DeviceCard({
     required this.device,
     required this.icon,
     required this.gradient,
     required this.onToggle,
+    required this.isDark,
   });
 
   @override
@@ -323,24 +329,24 @@ class _DeviceCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.cardBg(isDark),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isOn
               ? gradient[0].withValues(alpha: 0.2)
-              : const Color(0xFFE2E8F0),
+              : AppColors.border(isDark),
           width: 1.5,
         ),
         boxShadow: [
           if (isOn)
             BoxShadow(
-              color: gradient[0].withValues(alpha: 0.1),
+              color: gradient[0].withValues(alpha: isDark ? 0.2 : 0.1),
               blurRadius: 16,
               offset: const Offset(0, 4),
             )
           else
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
+              color: AppColors.shadow(isDark),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -360,13 +366,13 @@ class _DeviceCard extends StatelessWidget {
                       colors: gradient,
                     )
                   : null,
-              color: isOn ? null : const Color(0xFFF1F5F9),
+              color: isOn ? null : AppColors.cardBgLighter(isDark),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
               icon,
               size: 22,
-              color: isOn ? Colors.white : const Color(0xFF94A3B8),
+              color: isOn ? Colors.white : AppColors.textSecondary(isDark),
             ),
           ),
           const SizedBox(width: 16),
@@ -376,10 +382,10 @@ class _DeviceCard extends StatelessWidget {
               children: [
                 Text(
                   device.namaAlat,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF1E293B),
+                    color: AppColors.textPrimary(isDark),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -390,7 +396,7 @@ class _DeviceCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isOn
                         ? gradient[0].withValues(alpha: 0.1)
-                        : const Color(0xFFF8FAFC),
+                        : AppColors.cardBgDarker(isDark),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -398,7 +404,7 @@ class _DeviceCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: isOn ? gradient[0] : const Color(0xFF94A3B8),
+                      color: isOn ? gradient[0] : AppColors.textSecondary(isDark),
                     ),
                   ),
                 ),

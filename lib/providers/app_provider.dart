@@ -14,6 +14,7 @@ class AppProvider extends ChangeNotifier {
   int? _currentUserId;
   String _currentTab = 'beranda';
   bool _isSeeded = false;
+  bool _isDarkMode = false;
 
   // Live data
   User? _user;
@@ -29,6 +30,7 @@ class AppProvider extends ChangeNotifier {
   int? get currentUserId => _currentUserId;
   String get currentTab => _currentTab;
   bool get isSeeded => _isSeeded;
+  bool get isDarkMode => _isDarkMode;
   User? get user => _user;
   List<Greenhouse> get greenhouses => _greenhouses;
   Greenhouse? get activeGreenhouse => _greenhouses.isNotEmpty ? _greenhouses.first : null;
@@ -75,6 +77,11 @@ class AppProvider extends ChangeNotifier {
 
   void setTab(String tab) {
     _currentTab = tab;
+    notifyListeners();
+  }
+
+  void toggleDarkMode() {
+    _isDarkMode = !_isDarkMode;
     notifyListeners();
   }
 

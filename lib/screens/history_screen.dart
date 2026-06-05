@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../providers/app_provider.dart';
 import '../models/sensor_log.dart';
 import '../models/activity_log.dart';
+import '../utils/app_colors.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -40,10 +41,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final activeGreenhouse = provider.activeGreenhouse;
     final rawLogs = provider.sensorLogs;
     final activities = provider.activityLogs;
+    final isDark = provider.isDarkMode;
 
     if (activeGreenhouse == null) {
       return Scaffold(
-        backgroundColor: const Color(0xFFF6F8FB),
+        backgroundColor: AppColors.background(isDark),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -51,15 +53,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFECFDF5),
+                  color: AppColors.primaryBg(isDark),
                   borderRadius: BorderRadius.circular(24),
                 ),
-                child: const Icon(Icons.history_rounded, size: 48, color: Color(0xFF059669)),
+                child: const Icon(Icons.history_rounded, size: 48, color: AppColors.primary),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Belum ada lahan',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary(isDark)),
               ),
             ],
           ),
@@ -79,7 +81,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final displayActivities = filteredActivities.isEmpty ? activities : filteredActivities;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FB),
+      backgroundColor: AppColors.background(isDark),
       body: Column(
         children: [
           // ── Header ──
@@ -116,23 +118,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                         colors: [Color(0xFF047857), Color(0xFF10B981)],
                                       )
                                     : null,
-                                color: isActive ? null : Colors.white,
+                                color: isActive ? null : AppColors.cardBg(isDark),
                                 borderRadius: BorderRadius.circular(14),
                                 border: Border.all(
-                                  color: isActive ? Colors.transparent : const Color(0xFFE2E8F0),
+                                  color: isActive ? Colors.transparent : AppColors.border(isDark),
                                   width: 1.5,
                                 ),
                                 boxShadow: isActive
                                     ? [
                                         BoxShadow(
-                                          color: const Color(0xFF059669).withValues(alpha: 0.3),
+                                          color: const Color(0xFF059669).withValues(alpha: isDark ? 0.4 : 0.3),
                                           blurRadius: 10,
                                           offset: const Offset(0, 4),
                                         ),
                                       ]
                                     : [
                                         BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.02),
+                                          color: AppColors.shadow(isDark),
                                           blurRadius: 4,
                                           offset: const Offset(0, 2),
                                         ),
@@ -143,7 +145,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                 style: TextStyle(
                                   fontSize: 13, 
                                   fontWeight: FontWeight.w700,
-                                  color: isActive ? Colors.white : const Color(0xFF64748B),
+                                  color: isActive ? Colors.white : AppColors.textSecondary(isDark),
                                 ),
                               ),
                             ),
@@ -160,7 +162,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       filteredLogs.isEmpty
                           ? 'Masa ini kosong, menampilkan ringkasan data terakhir'
                           : 'Terdapat ${filteredLogs.length} data terekam di masa ini',
-                      style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8), fontWeight: FontWeight.w500),
+                      style: TextStyle(fontSize: 12, color: AppColors.textMuted(isDark), fontWeight: FontWeight.w500),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -169,11 +171,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.cardBg(isDark),
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.03),
+                          color: AppColors.shadow(isDark),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -182,19 +184,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Row(
+                        Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
                               'Grafik 24 Jam Terakhir',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Color(0xFF1E293B)),
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textPrimary(isDark)),
                             ),
                             Row(
                               children: [
-                                _LegendDot(color: Color(0xFFF59E0B), label: 'Suhu'),
+                                _LegendDot(color: Color(0xFFF59E0B), label: 'Suhu', isDark: isDark),
                                 SizedBox(width: 12),
-                                _LegendDot(color: Color(0xFF0EA5E9), label: 'Lembap'),
+                                _LegendDot(color: Color(0xFF0EA5E9), label: 'Lembap', isDark: isDark),
                               ],
                             ),
                           ],
@@ -203,7 +205,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         SizedBox(
                           height: 200,
                           child: chartData.isEmpty
-                              ? const Center(child: Text('Tidak ada data', style: TextStyle(color: Color(0xFF94A3B8))))
+                              ? Center(child: Text('Tidak ada data', style: TextStyle(color: AppColors.textMuted(isDark))))
                               : LineChart(
                                   LineChartData(
                                     gridData: FlGridData(
@@ -211,7 +213,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                       drawVerticalLine: false,
                                       horizontalInterval: 20,
                                       getDrawingHorizontalLine: (value) => FlLine(
-                                        color: const Color(0xFFF1F5F9),
+                                        color: AppColors.divider(isDark),
                                         strokeWidth: 1,
                                         dashArray: [5, 5],
                                       ),
@@ -232,7 +234,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                               padding: const EdgeInsets.only(top: 12),
                                               child: Text(
                                                 chartData[idx].label,
-                                                style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8), fontWeight: FontWeight.w700),
+                                                style: TextStyle(fontSize: 10, color: AppColors.textMuted(isDark), fontWeight: FontWeight.w700),
                                               ),
                                             );
                                           },
@@ -242,8 +244,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                     ),
                                     minY: 0, maxY: 100,
                                     lineBarsData: [
-                                      _buildLine(chartData.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.suhu)).toList(), const Color(0xFFF59E0B)),
-                                      _buildLine(chartData.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.lembab)).toList(), const Color(0xFF0EA5E9)),
+                                      _buildLine(chartData.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.suhu)).toList(), const Color(0xFFF59E0B), isDark),
+                                      _buildLine(chartData.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.lembab)).toList(), const Color(0xFF0EA5E9), isDark),
                                     ],
                                   ),
                                 ),
@@ -254,13 +256,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   const SizedBox(height: 32),
 
                   // Activity log Title
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.history_edu_rounded, size: 20, color: Color(0xFF059669)),
+                      Icon(Icons.history_edu_rounded, size: 20, color: AppColors.primary),
                       SizedBox(width: 8),
                       Text(
                         'Buku Catatan Alat',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF1E293B)),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary(isDark)),
                       ),
                     ],
                   ),
@@ -270,17 +272,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.cardBg(isDark),
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.03),
+                          color: AppColors.shadow(isDark),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
                       ],
                     ),
-                    child: _ActivityTimeline(activities: displayActivities.take(10).toList()),
+                    child: _ActivityTimeline(activities: displayActivities.take(10).toList(), isDark: isDark),
                   ),
                   const SizedBox(height: 24),
                 ],
@@ -302,7 +304,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     )).toList();
   }
 
-  LineChartBarData _buildLine(List<FlSpot> spots, Color color) {
+  LineChartBarData _buildLine(List<FlSpot> spots, Color color, bool isDark) {
     return LineChartBarData(
       spots: spots,
       isCurved: true,
@@ -314,7 +316,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         show: true,
         getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
           radius: 4,
-          color: Colors.white,
+          color: AppColors.cardBg(isDark),
           strokeWidth: 2,
           strokeColor: color,
         ),
@@ -419,7 +421,8 @@ class _ChartPoint {
 class _LegendDot extends StatelessWidget {
   final Color color;
   final String label;
-  const _LegendDot({required this.color, required this.label});
+  final bool isDark;
+  const _LegendDot({required this.color, required this.label, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -436,7 +439,7 @@ class _LegendDot extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           label, 
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF64748B)),
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textMuted(isDark)),
         ),
       ],
     );
@@ -445,15 +448,16 @@ class _LegendDot extends StatelessWidget {
 
 class _ActivityTimeline extends StatelessWidget {
   final List<ActivityLog> activities;
-  const _ActivityTimeline({required this.activities});
+  final bool isDark;
+  const _ActivityTimeline({required this.activities, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
     if (activities.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 24),
-          child: Text('Belum ada aktivitas tercatat', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13, fontWeight: FontWeight.w500)),
+          child: Text('Belum ada aktivitas tercatat', style: TextStyle(color: AppColors.textMuted(isDark), fontSize: 13, fontWeight: FontWeight.w500)),
         ),
       );
     }
@@ -470,7 +474,7 @@ class _ActivityTimeline extends StatelessWidget {
                 child: Container(
                   width: 2, 
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE2E8F0),
+                    color: AppColors.border(isDark),
                     borderRadius: BorderRadius.circular(1),
                   ),
                 )
@@ -508,9 +512,9 @@ class _ActivityTimeline extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: AppColors.cardBg(isDark),
                             shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFFE2E8F0), width: 2),
+                            border: Border.all(color: AppColors.border(isDark), width: 2),
                           ),
                           child: Container(
                             width: 10, height: 10,
@@ -541,12 +545,12 @@ class _ActivityTimeline extends StatelessWidget {
                           children: [
                             Text(
                               log.keterangan, 
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1E293B), height: 1.3),
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary(isDark), height: 1.3),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               DateFormat('dd MMM yyyy • HH:mm').format(DateTime.fromMillisecondsSinceEpoch(log.waktuKejadian)),
-                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF94A3B8)),
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.textMuted(isDark)),
                             ),
                           ],
                         ),
