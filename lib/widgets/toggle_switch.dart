@@ -13,21 +13,47 @@ class ToggleSwitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onChange,
+      onTap: () {
+        // Haptic feedback could be added here if needed
+        onChange();
+      },
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: 48,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOutCubic,
+        width: 52,
         height: 28,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
-          color: checked ? const Color(0xFF059669) : const Color(0xFFE2E8F0),
+          gradient: checked
+              ? const LinearGradient(
+                  colors: [Color(0xFF047857), Color(0xFF10B981)],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                )
+              : null,
+          color: checked ? null : const Color(0xFFE2E8F0),
+          boxShadow: checked
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF059669).withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  )
+                ]
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  )
+                ],
         ),
         child: AnimatedAlign(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeInOut,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOutCubic,
           alignment: checked ? Alignment.centerRight : Alignment.centerLeft,
           child: Container(
-            margin: const EdgeInsets.all(3),
+            margin: const EdgeInsets.symmetric(horizontal: 3),
             width: 22,
             height: 22,
             decoration: BoxDecoration(
@@ -41,6 +67,9 @@ class ToggleSwitch extends StatelessWidget {
                 ),
               ],
             ),
+            child: checked
+                ? const Icon(Icons.check_rounded, size: 14, color: Color(0xFF059669))
+                : const SizedBox.shrink(),
           ),
         ),
       ),

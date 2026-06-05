@@ -11,24 +11,30 @@ class BottomNav extends StatelessWidget {
   });
 
   static const _tabs = [
-    _NavTab(id: 'beranda', label: 'BERANDA', icon: Icons.home_rounded),
-    _NavTab(id: 'kendali', label: 'KENDALI', icon: Icons.settings_rounded),
-    _NavTab(id: 'aturan', label: 'ATURAN', icon: Icons.tune_rounded),
-    _NavTab(id: 'riwayat', label: 'RIWAYAT', icon: Icons.access_time_rounded),
-    _NavTab(id: 'profil', label: 'PROFIL', icon: Icons.person_rounded),
+    _NavTab(id: 'beranda', label: 'Beranda', icon: Icons.home_rounded),
+    _NavTab(id: 'kendali', label: 'Kendali', icon: Icons.tune_rounded),
+    _NavTab(id: 'aturan', label: 'Aturan', icon: Icons.auto_mode_rounded),
+    _NavTab(id: 'riwayat', label: 'Riwayat', icon: Icons.history_rounded),
+    _NavTab(id: 'profil', label: 'Profil', icon: Icons.person_rounded),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFE5E7EB), width: 1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
+          ),
+        ],
       ),
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: _tabs.map((tab) {
@@ -70,45 +76,39 @@ class _NavButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 56,
-        child: Column(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+        padding:
+            EdgeInsets.symmetric(horizontal: isActive ? 16 : 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive
+              ? const Color(0xFF059669).withValues(alpha: 0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (isActive)
-              Container(
-                width: 32,
-                height: 3,
-                margin: const EdgeInsets.only(bottom: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF059669),
-                  borderRadius: BorderRadius.circular(2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF059669).withValues(alpha: 0.5),
-                      blurRadius: 8,
-                    ),
-                  ],
-                ),
-              )
-            else
-              const SizedBox(height: 7),
             Icon(
               tab.icon,
               size: 24,
-              color: isActive ? const Color(0xFF059669) : const Color(0xFF9CA3AF),
+              color:
+                  isActive ? const Color(0xFF059669) : const Color(0xFF94A3B8),
             ),
-            const SizedBox(height: 2),
-            Text(
-              tab.label,
-              style: TextStyle(
-                fontSize: 9,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.5,
-                color: isActive ? const Color(0xFF047857) : const Color(0xFF6B7280),
+            // Only show the label if this tab is active
+            if (isActive) ...[
+              const SizedBox(width: 6),
+              Text(
+                tab.label,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF059669),
+                  letterSpacing: 0.2,
+                ),
               ),
-            ),
-            const SizedBox(height: 2),
+            ],
           ],
         ),
       ),
