@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
-import '../widgets/gauge_widget.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -22,174 +21,74 @@ class DashboardScreen extends StatelessWidget {
     final kipas = devices.where((d) => d.tipeAlat == 'kipas').firstOrNull;
     final embun = devices.where((d) => d.tipeAlat == 'embun').firstOrNull;
 
+    final suhu = sensorData?.suhu ?? 0;
+    final kelembaban = sensorData?.kelembaban ?? 0;
+
+    // Determine status
+    final bool isNormal =
+        suhu <= 35 && suhu >= 15 && kelembaban >= 40 && kelembaban <= 90;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF6F8FB),
       body: Column(
         children: [
-          _AppHeader(),
+          // ── Gradient Header ──
+          _GradientHeader(
+              firstName: firstName, lahanName: activeGreenhouse.namaLahan),
+          // ── Scrollable Content ──
           Expanded(
             child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 8),
-                    // Greeting
-                    Text(
-                      'Halo, $firstName!',
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF1E293B),
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
+                    // ── Connection Status ──
+                    _ConnectionBadge(),
+                    const SizedBox(height: 20),
 
-                    // Lahan selector
+                    // ── Sensor Cards Row ──
                     Row(
                       children: [
-                        GestureDetector(
-                          onTap: () => context.read<AppProvider>().setTab('profil'),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF8FAFC),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.navigation_rounded, size: 12, color: Color(0xFF059669)),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'Lahan: ${activeGreenhouse.namaLahan}',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF475569),
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                const Text('▼', style: TextStyle(fontSize: 10, color: Color(0xFF94A3B8))),
-                              ],
-                            ),
+                        Expanded(
+                          child: _SensorCard(
+                            value: suhu,
+                            unit: '°C',
+                            label: 'Suhu Udara',
+                            icon: Icons.thermostat_rounded,
+                            gradientColors: const [
+                              Color(0xFFFF6B6B),
+                              Color(0xFFFF8E53)
+                            ],
+                            bgColor: const Color(0xFFFFF5F5),
+                            max: 50,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: _SensorCard(
+                            value: kelembaban,
+                            unit: '%',
+                            label: 'Kelembaban',
+                            icon: Icons.water_drop_rounded,
+                            gradientColors: const [
+                              Color(0xFF4FACFE),
+                              Color(0xFF00F2FE)
+                            ],
+                            bgColor: const Color(0xFFF0F9FF),
+                            max: 100,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 18),
 
-                    // Status badge
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFECFDF5),
-                        border: Border.all(color: const Color(0xFFD1FAE5)),
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: Row(
-                        children: [
-                          _PulsingDot(),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'ALAT: TERHUBUNG',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF047857),
-                              letterSpacing: 0.8,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
+                    // ── Status Card ──
+                    _StatusCard(isNormal: isNormal),
+                    const SizedBox(height: 22),
 
-                    // Gauges
-                    Row(
-                      children: [
-                        GaugeWidget(
-                          value: sensorData?.suhu ?? 0,
-                          max: 50,
-                          label: 'Suhu Udara',
-                          icon: Icons.eco_rounded,
-                          color: const Color(0xFF059669),
-                          trackColor: const Color(0xFFF1F5F9),
-                        ),
-                        const SizedBox(width: 16),
-                        GaugeWidget(
-                          value: sensorData?.kelembaban ?? 0,
-                          max: 100,
-                          label: 'Lembab Udara',
-                          icon: Icons.water_drop_rounded,
-                          color: const Color(0xFF0D9488),
-                          trackColor: const Color(0xFFF1F5F9),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Alert card
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF047857),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF059669).withValues(alpha: 0.25),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Icon(Icons.check_circle_rounded, color: Colors.white, size: 24),
-                          ),
-                          const SizedBox(width: 16),
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Kabar Lahan: Suhu Normal & Aman',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  'Semua indikator lingkungan berada dalam batas optimal.',
-                                  style: TextStyle(
-                                    color: Color(0xFFD1FAE5),
-                                    fontSize: 13,
-                                    height: 1.5,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Quick actions
+                    // ── Quick Actions ──
                     const Text(
                       'Aksi Cepat',
                       style: TextStyle(
@@ -198,37 +97,47 @@ class DashboardScreen extends StatelessWidget {
                         color: Color(0xFF1E293B),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     Row(
                       children: [
                         Expanded(
-                          child: _QuickActionButton(
-                            label: 'Nyalakan\nKipas',
-                            subLabel: 'Manual:\n${kipas?.statusSaatIni == 'on' ? 'Aktif' : 'Nonaktif'}',
+                          child: _QuickActionCard(
+                            title: 'Kipas',
+                            subtitle: kipas?.statusSaatIni == 'on'
+                                ? 'Aktif'
+                                : 'Nonaktif',
                             icon: Icons.air_rounded,
                             isOn: kipas?.statusSaatIni == 'on',
-                            activeColor: const Color(0xFF059669),
-                            activeBg: const Color(0xFFECFDF5),
-                            activeBorder: const Color(0xFF6EE7B7),
-                            onTap: kipas != null ? () => provider.toggleDevice(kipas) : null,
+                            activeGradient: const [
+                              Color(0xFF059669),
+                              Color(0xFF34D399)
+                            ],
+                            onTap: kipas != null
+                                ? () => provider.toggleDevice(kipas)
+                                : null,
                           ),
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 14),
                         Expanded(
-                          child: _QuickActionButton(
-                            label: 'Nyalakan\nEmbun',
-                            subLabel: 'Manual:\n${embun?.statusSaatIni == 'on' ? 'Aktif' : 'Nonaktif'}',
+                          child: _QuickActionCard(
+                            title: 'Embun',
+                            subtitle: embun?.statusSaatIni == 'on'
+                                ? 'Aktif'
+                                : 'Nonaktif',
                             icon: Icons.water_drop_rounded,
                             isOn: embun?.statusSaatIni == 'on',
-                            activeColor: const Color(0xFF0D9488),
-                            activeBg: const Color(0xFFF0FDFA),
-                            activeBorder: const Color(0xFF99F6E4),
-                            onTap: embun != null ? () => provider.toggleDevice(embun) : null,
+                            activeGradient: const [
+                              Color(0xFF0D9488),
+                              Color(0xFF5EEAD4)
+                            ],
+                            onTap: embun != null
+                                ? () => provider.toggleDevice(embun)
+                                : null,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 8),
                   ],
                 ),
               ),
@@ -240,100 +149,162 @@ class DashboardScreen extends StatelessWidget {
   }
 }
 
-class _NoGreenhouseView extends StatelessWidget {
-  const _NoGreenhouseView();
+// ═══════════════════════════════════════════════════
+// Gradient Header
+// ═══════════════════════════════════════════════════
+class _GradientHeader extends StatelessWidget {
+  final String firstName;
+  final String lahanName;
+
+  const _GradientHeader({required this.firstName, required this.lahanName});
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.eco_rounded, size: 48, color: Color(0xFFCBD5E1)),
-            SizedBox(height: 16),
-            Text(
-              'Belum ada lahan',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
-            ),
-            SizedBox(height: 8),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 40),
-              child: Text(
-                'Akun Anda tidak memiliki lahan aktif. Silahkan buat akun baru atau masuk dengan akun default.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
-              ),
-            ),
-          ],
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF047857), Color(0xFF059669), Color(0xFF10B981)],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
         ),
       ),
-    );
-  }
-}
-
-class _AppHeader extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Row(
-              children: [
-                Icon(Icons.eco_rounded, size: 22, color: Color(0xFF059669)),
-                SizedBox(width: 8),
-                Text(
-                  'SmartGreen',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF059669),
-                    letterSpacing: -0.3,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top row: logo + menu
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.eco_rounded,
+                            size: 18, color: Colors.white),
+                      ),
+                      const SizedBox(width: 10),
+                      const Text(
+                        'SmartGreen',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.menu_rounded,
+                          color: Colors.white, size: 20),
+                    ),
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content:
+                              const Text('Menu navigasi akan segera hadir'),
+                          backgroundColor: const Color(0xFF1E293B),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Greeting
+              Text(
+                'Halo, $firstName! 👋',
+                style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              // Lahan selector
+              GestureDetector(
+                onTap: () => context.read<AppProvider>().setTab('profil'),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.location_on_rounded,
+                          size: 13, color: Color(0xFFD1FAE5)),
+                      const SizedBox(width: 6),
+                      Text(
+                        lahanName,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFD1FAE5),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.keyboard_arrow_down_rounded,
+                          size: 16, color: Color(0xFFD1FAE5)),
+                    ],
                   ),
                 ),
-              ],
-            ),
-            IconButton(
-              icon: const Icon(Icons.menu_rounded, color: Color(0xFF475569)),
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('Menu navigasi akan segera hadir'),
-                    backgroundColor: const Color(0xFF1E293B),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              },
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _PulsingDot extends StatefulWidget {
+// ═══════════════════════════════════════════════════
+// Connection Badge
+// ═══════════════════════════════════════════════════
+class _ConnectionBadge extends StatefulWidget {
   @override
-  State<_PulsingDot> createState() => _PulsingDotState();
+  State<_ConnectionBadge> createState() => _ConnectionBadgeState();
 }
 
-class _PulsingDotState extends State<_PulsingDot> with SingleTickerProviderStateMixin {
+class _ConnectionBadgeState extends State<_ConnectionBadge>
+    with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
   late Animation<double> _anim;
 
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 1))
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1200))
       ..repeat(reverse: true);
-    _anim = Tween<double>(begin: 0.4, end: 1.0).animate(_ctrl);
+    _anim = Tween<double>(begin: 0.4, end: 1.0).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -344,44 +315,305 @@ class _PulsingDotState extends State<_PulsingDot> with SingleTickerProviderState
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _anim,
-      builder: (_, __) => Container(
-        width: 8,
-        height: 8,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: const Color(0xFF10B981).withValues(alpha: _anim.value),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF10B981).withValues(alpha: 0.8 * _anim.value),
-              blurRadius: 8,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          AnimatedBuilder(
+            animation: _anim,
+            builder: (_, __) => Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Color.lerp(
+                  const Color(0xFF10B981).withValues(alpha: 0.4),
+                  const Color(0xFF10B981),
+                  _anim.value,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF10B981)
+                        .withValues(alpha: 0.5 * _anim.value),
+                    blurRadius: 6,
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 10),
+          const Text(
+            'ALAT TERHUBUNG',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF059669),
+              letterSpacing: 1.0,
+            ),
+          ),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: const Color(0xFFECFDF5),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Text(
+              'Online',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF059669),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _QuickActionButton extends StatelessWidget {
+// ═══════════════════════════════════════════════════
+// Sensor Card (replaces heavy gauge)
+// ═══════════════════════════════════════════════════
+class _SensorCard extends StatelessWidget {
+  final double value;
+  final String unit;
   final String label;
-  final String subLabel;
+  final IconData icon;
+  final List<Color> gradientColors;
+  final Color bgColor;
+  final double max;
+
+  const _SensorCard({
+    required this.value,
+    required this.unit,
+    required this.label,
+    required this.icon,
+    required this.gradientColors,
+    required this.bgColor,
+    required this.max,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = (value / max).clamp(0.0, 1.0);
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: gradientColors[0].withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Icon badge
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, size: 20, color: gradientColors[0]),
+          ),
+          const SizedBox(height: 14),
+          // Value
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: value),
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.easeOutCubic,
+                builder: (_, animValue, __) => Text(
+                  '${animValue.round()}',
+                  style: const TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF1E293B),
+                    height: 1,
+                    letterSpacing: -1.5,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 3, left: 2),
+                child: Text(
+                  unit,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: gradientColors[0],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          // Label
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF94A3B8),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Progress bar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: progress),
+              duration: const Duration(milliseconds: 900),
+              curve: Curves.easeOutCubic,
+              builder: (_, animProgress, __) => Stack(
+                children: [
+                  Container(
+                    height: 6,
+                    width: double.infinity,
+                    color: bgColor,
+                  ),
+                  FractionallySizedBox(
+                    widthFactor: animProgress,
+                    child: Container(
+                      height: 6,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(colors: gradientColors),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// Status Card
+// ═══════════════════════════════════════════════════
+class _StatusCard extends StatelessWidget {
+  final bool isNormal;
+
+  const _StatusCard({required this.isNormal});
+
+  @override
+  Widget build(BuildContext context) {
+    final Color bgColor =
+        isNormal ? const Color(0xFF047857) : const Color(0xFFDC2626);
+    final Color lightColor =
+        isNormal ? const Color(0xFF10B981) : const Color(0xFFF87171);
+    final String title = isNormal
+        ? 'Kabar Lahan: Suhu Normal & Aman'
+        : 'Peringatan: Parameter Tidak Normal';
+    final String subtitle = isNormal
+        ? 'Semua indikator lingkungan berada dalam batas optimal.'
+        : 'Cek parameter suhu dan kelembaban segera.';
+    final IconData statusIcon =
+        isNormal ? Icons.check_circle_rounded : Icons.warning_rounded;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [bgColor, lightColor],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: bgColor.withValues(alpha: 0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(statusIcon, color: Colors.white, size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    height: 1.3,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    fontSize: 12,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// Quick Action Card
+// ═══════════════════════════════════════════════════
+class _QuickActionCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
   final IconData icon;
   final bool isOn;
-  final Color activeColor;
-  final Color activeBg;
-  final Color activeBorder;
+  final List<Color> activeGradient;
   final VoidCallback? onTap;
 
-  const _QuickActionButton({
-    required this.label,
-    required this.subLabel,
+  const _QuickActionCard({
+    required this.title,
+    required this.subtitle,
     required this.icon,
     required this.isOn,
-    required this.activeColor,
-    required this.activeBg,
-    required this.activeBorder,
+    required this.activeGradient,
     this.onTap,
   });
 
@@ -390,48 +622,138 @@ class _QuickActionButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(16),
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: isOn ? activeBg : Colors.white,
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isOn ? activeBorder : const Color(0xFFF1F5F9),
+            color: isOn
+                ? activeGradient[0].withValues(alpha: 0.3)
+                : const Color(0xFFE2E8F0),
             width: 1.5,
           ),
-          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            if (isOn)
+              BoxShadow(
+                color: activeGradient[0].withValues(alpha: 0.12),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              )
+            else
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+          ],
         ),
         child: Column(
           children: [
-            Container(
-              padding: const EdgeInsets.all(12),
+            // Icon with gradient background when ON
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: isOn ? activeColor.withValues(alpha: 0.15) : const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(12),
+                gradient: isOn
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: activeGradient,
+                      )
+                    : null,
+                color: isOn ? null : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(icon, size: 24, color: isOn ? activeColor : const Color(0xFF94A3B8)),
+              child: Icon(
+                icon,
+                size: 26,
+                color: isOn ? Colors.white : const Color(0xFF94A3B8),
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             Text(
-              label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 11,
+              title,
+              style: TextStyle(
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
-                letterSpacing: 0.5,
-                color: Color(0xFF1E293B),
+                color: isOn ? activeGradient[0] : const Color(0xFF475569),
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              subLabel,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 10,
-                color: Color(0xFF94A3B8),
-                fontWeight: FontWeight.w500,
+            // Status pill
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+              decoration: BoxDecoration(
+                color: isOn
+                    ? activeGradient[0].withValues(alpha: 0.1)
+                    : const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: isOn ? activeGradient[0] : const Color(0xFF94A3B8),
+                ),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// No Greenhouse View
+// ═══════════════════════════════════════════════════
+class _NoGreenhouseView extends StatelessWidget {
+  const _NoGreenhouseView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F8FB),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFECFDF5),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: const Icon(Icons.eco_rounded,
+                    size: 48, color: Color(0xFF059669)),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Belum ada lahan',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1E293B),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Akun Anda tidak memiliki lahan aktif.\nSilahkan buat akun baru atau masuk\ndengan akun default.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Color(0xFF64748B),
+                  fontSize: 14,
+                  height: 1.6,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
